@@ -9,6 +9,15 @@
 * separate release PRs per package and add dev dockerfile ([132d2df](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/132d2dfeb7a9bcd89604fd8eedd09fa6e91d8418))
 * trigger release-please ([8590117](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/85901177eea09207fe87060505035aba613f99f2))
 
+## [2.0.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v2.0.0...datacenter-game-server-v2.0.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* reset all packages to v1.0.0 ([793d6ae](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/793d6ae4a6ddbc7b29e4fc4b90b715e4a9932ef4))
+* separate release PRs per package and add dev dockerfile ([132d2df](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/132d2dfeb7a9bcd89604fd8eedd09fa6e91d8418))
+* trigger release-please ([8590117](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/85901177eea09207fe87060505035aba613f99f2))
+
 ## [2.0.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v1.0.0...datacenter-game-server-v2.0.0) (2026-04-11)
 
 
