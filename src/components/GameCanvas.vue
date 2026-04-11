@@ -62,7 +62,7 @@ const props = defineProps({
   serverAlert: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['cell-selected', 'place-rack', 'cancel-mode', 'unlock-cell', 'buy-floor', 'set-floor'])
+const emit = defineEmits(['cell-selected', 'place-rack', 'cancel-mode', 'unlock-cell', 'buy-floor', 'set-floor', 'open-shop'])
 
 const canvasRef   = ref(null)
 const hoveredCell = ref(null)
@@ -578,6 +578,12 @@ function onClick(e) {
     if (isAdjacentToUnlocked(grid, cell.x, cell.y)) {
       emit('unlock-cell', { floorId: cell.floorId, x: cell.x, y: cell.y })
     }
+    return
+  }
+
+  // Empty unlocked cell (no rack): open shop
+  if (!cell.rack) {
+    emit('open-shop')
     return
   }
 

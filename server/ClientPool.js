@@ -197,7 +197,7 @@ export function nextPoolId() { return _nextPoolClientId++ }
  * Counts free slots from BOTH auto-mode and templates-mode players so that
  * template datacenters also receive their share of market demand.
  */
-export function generatePoolClients(shared, players) {
+export function generatePoolClients(shared, players, existingPoolSize = 0) {
   const weights = shared.marketWeights ?? getMarketWeights(shared.year ?? 1)
 
   // Count total free slots across all connected players (auto + templates).
@@ -233,9 +233,11 @@ export function generatePoolClients(shared, players) {
   }
   if (totalFreeSlots <= 0) return []
 
-  // Weekly batch: fill free slots + ~15% margin
+  // Weekly batch: fill gap between existing pool and free slots + ~15% margin
   const activity = shared.marketActivity ?? 1.0
-  const count    = Math.ceil(totalFreeSlots * 1.15 * activity)
+  const target   = Math.ceil(totalFreeSlots * 1.15 * activity)
+  const count    = Math.max(0, target - existingPoolSize)
+  if (count <= 0) return []
 
   const clients = []
   for (let i = 0; i < count; i++) {

@@ -192,9 +192,9 @@ export function executeTick(room) {
   const specialists = detectSpecialists(room.players)
 
   if (room.shared.day % 7 === 1) {
-    const newBatch = generatePoolClients(room.shared, room.players)
-    room._pendingPool = newBatch
-    room.shared.lastPoolCount = newBatch.length
+    const newBatch = generatePoolClients(room.shared, room.players, room._pendingPool.length)
+    room._pendingPool.push(...newBatch)
+    room.shared.lastPoolCount = room._pendingPool.length
     console.log(`[Room ${room.id}] Week ${Math.ceil(room.shared.day / 7)}: ${newBatch.length} pool clients generated`)
     for (const [, p] of room.players) {
       const modes = JSON.stringify(p.state.serviceModes ?? {})

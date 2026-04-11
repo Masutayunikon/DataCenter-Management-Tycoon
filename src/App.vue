@@ -59,6 +59,7 @@
           @unlock-cell="onUnlockCell"
           @buy-floor="onBuyFloor"
           @set-floor="gameState.currentFloor = $event"
+          @open-shop="showShop = true"
         />
       </div>
       <RightPanel
@@ -240,7 +241,7 @@ mp.setCallbacks({
           for (const cell of row) {
             if (cell.rack?.servers) {
               for (const srv of cell.rack.servers) {
-                if (srv.status === 'failed' || srv.status === 'needs_restart') prevFailedIds.add(srv.id)
+                if (srv && (srv.status === 'failed' || srv.status === 'needs_restart')) prevFailedIds.add(srv.id)
               }
             }
           }
@@ -262,7 +263,7 @@ mp.setCallbacks({
           for (const cell of row) {
             if (cell.rack?.servers) {
               for (const srv of cell.rack.servers) {
-                if ((srv.status === 'failed' || srv.status === 'needs_restart') && !prevFailedIds.has(srv.id)) {
+                if (srv && (srv.status === 'failed' || srv.status === 'needs_restart') && !prevFailedIds.has(srv.id)) {
                   newFailure = true
                 }
               }

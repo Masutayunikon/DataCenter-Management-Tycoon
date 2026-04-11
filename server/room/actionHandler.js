@@ -262,6 +262,11 @@ export async function processAction(room, socketId, type, payload) {
   }
 
   // Force delta push for the acting player
-  pushPlayerDelta(room, socketId)
+  console.log(`[processAction] ${type} succeeded, pushing delta`)
+  try {
+    pushPlayerDelta(room, socketId)
+  } catch (err) {
+    console.error(`[processAction] pushPlayerDelta threw:`, err)
+  }
   return { ok: true }
 }
