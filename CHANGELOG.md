@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.1...datacenter-site-v2.0.2) (2026-04-11)
+
+
+### Bug Fixes
+
+* revert to single grouped release PR ([313e096](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/313e096793fbd20c9c10789ac313f782dac9d84d))
+* static group PR title instead of branch name ([e7acde9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e7acde91ce083c039cc0215e6d1b06ae95e11d80))
+
 ## [2.0.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.0...datacenter-site-v2.0.1) (2026-04-11)
 
 
