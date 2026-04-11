@@ -10,7 +10,11 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: gcr.io/${{ vars.GCP_PROJECT_ID }}/datacenter-game-server
+  IMAGE: ghcr.io/${{ github.repository_owner }}/datacenter-game-server
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build-push:
@@ -18,12 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Auth GCR
+      - name: Auth GHCR
         uses: docker/login-action@v3
         with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCP_SA_KEY }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker meta
         id: meta
