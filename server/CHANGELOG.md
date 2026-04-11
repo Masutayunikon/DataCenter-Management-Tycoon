@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v2.0.2...datacenter-game-server-v2.1.0) (2026-04-11)
+
+
+### Features
+
+* add env var support for server config + runtipi app definitions ([c4c368e](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/c4c368eab58573d032348ca2212ca2beec51133c))
+
+
+### Bug Fixes
+
+* inline SERVICES data in server to remove frontend import ([de7030c](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/de7030c5453a97166a7de0a8390b042a613b1002))
+* trigger release-please ([7de5222](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/7de522212232230d94d74ceb0d81f58d53521b94))
+
 ## [2.0.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v2.0.1...datacenter-game-server-v2.0.2) (2026-04-11)
 
 
