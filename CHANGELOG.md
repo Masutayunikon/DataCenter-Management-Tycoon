@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.1.1...datacenter-site-v2.2.0) (2026-04-11)
+
+
+### Features
+
+* pool qui ne se reset plus et moins de generation ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+
+
+### Bug Fixes
+
+* add debug logs for install_server action ([e6bd608](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e6bd608ad01de517e02138853da3961254ff5fe4))
+* add SERVER_DESCRIPTION and SERVER_IMAGE_URL env vars ([188ea0a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/188ea0a94e31350903436e0081a1d592ed5388c6))
+* fix rack ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+
 ## [2.1.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.1.0...datacenter-site-v2.1.1) (2026-04-11)
 
 
