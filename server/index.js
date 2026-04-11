@@ -27,13 +27,14 @@ if (existsSync(configPath)) {
 } else {
   console.warn('[Server] No config file found — using built-in defaults.')
 }
-const PORT          = CONFIG.port            ?? 3001
-const MAX_ROOMS     = CONFIG.maxRooms        ?? 10
-const MAX_PLAYERS   = CONFIG.maxPlayersPerRoom ?? 16
-const IS_PRIVATE    = CONFIG.isPrivate       ?? false
-const SERVER_PASS   = CONFIG.serverPassword  ?? ''
-const LOBBY_URL     = CONFIG.lobbyUrl        ?? ''
-const PUBLIC_URL    = CONFIG.publicUrl       ?? `http://localhost:${PORT}`
+const PORT          = parseInt(process.env.SERVER_PORT      || CONFIG.port             || 3001)
+const MAX_ROOMS     = parseInt(process.env.MAX_ROOMS        || CONFIG.maxRooms          || 10)
+const MAX_PLAYERS   = parseInt(process.env.MAX_PLAYERS      || CONFIG.maxPlayersPerRoom  || 16)
+const IS_PRIVATE    = (process.env.IS_PRIVATE ?? String(CONFIG.isPrivate ?? 'false')) === 'true'
+const SERVER_PASS   = process.env.SERVER_PASSWORD           || CONFIG.serverPassword    || ''
+const LOBBY_URL     = process.env.LOBBY_URL                 || CONFIG.lobbyUrl          || ''
+const PUBLIC_URL    = process.env.PUBLIC_URL                || CONFIG.publicUrl         || `http://localhost:${PORT}`
+const SERVER_NAME   = process.env.SERVER_NAME               || CONFIG.name              || 'DataCenter Tycoon Server'
 
 // ─── HTTP + Socket.io setup ───────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ app.use(express.json())
 // Public server info endpoint (for direct connection without lobby)
 app.get('/info', (req, res) => {
   res.json({
-    name:              CONFIG.name,
+    name:              SERVER_NAME,
     description:       CONFIG.description ?? '',
     imageUrl:          CONFIG.imageUrl    ?? '',
     isPrivate:         IS_PRIVATE,
@@ -66,7 +67,7 @@ app.get('/api/servers', (req, res) => {
   res.json({
     servers: [{
       id:          'local',
-      name:        CONFIG.name,
+      name:        SERVER_NAME,
       description: CONFIG.description ?? '',
       imageUrl:    CONFIG.imageUrl    ?? '',
       isPrivate:   IS_PRIVATE,
@@ -108,7 +109,7 @@ setInterval(pruneEmptyRooms, 60_000)
 // ─── Lobby registration ───────────────────────────────────────────────────────
 
 const lobby = new LobbyClient(LOBBY_URL, {
-  name:              CONFIG.name,
+  name:              SERVER_NAME,
   description:       CONFIG.description ?? '',
   imageUrl:          CONFIG.imageUrl    ?? '',
   isPrivate:         IS_PRIVATE,
@@ -137,7 +138,7 @@ io.on('connection', socket => {
       return cb({ ok: false, error: 'Mot de passe serveur incorrect' })
     cb({
       ok:    true,
-      name:  CONFIG.name,
+      name:  SERVER_NAME,
       description: CONFIG.description ?? '',
       imageUrl: CONFIG.imageUrl ?? '',
       isPrivate: IS_PRIVATE,
@@ -271,7 +272,7 @@ io.on('connection', socket => {
 
 http.listen(PORT, () => {
   console.log(`\n🖥️  DataCenter Tycoon Game Server`)
-  console.log(`   Name    : ${CONFIG.name}`)
+  console.log(`   Name    : ${SERVER_NAME}`)
   console.log(`   Port    : ${PORT}`)
   console.log(`   Private : ${IS_PRIVATE ? 'Oui' : 'Non'}`)
   console.log(`   Max rooms: ${MAX_ROOMS} × ${MAX_PLAYERS} joueurs`)
