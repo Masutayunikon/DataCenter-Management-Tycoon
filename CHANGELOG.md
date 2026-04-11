@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.0...datacenter-site-v2.0.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* add site/server label in release PR titles ([5309a45](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/5309a4533fec080fae9424695163747f8f4b6fd0))
+* build Docker only on version tags, eliminate double builds ([833f159](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/833f1596fcd452bc0ff0642896fc33d89938d502))
+* separate release PRs per package and add dev dockerfile ([132d2df](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/132d2dfeb7a9bcd89604fd8eedd09fa6e91d8418))
+
 ## [2.0.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v1.0.0...datacenter-site-v2.0.0) (2026-04-11)
 
 
