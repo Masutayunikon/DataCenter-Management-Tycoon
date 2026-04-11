@@ -88,9 +88,13 @@ export async function processAction(room, socketId, type, payload) {
         const { SERVER_TYPES, createServer } = await import('../../src/game/GameState.js')
         const floor = state.floors.find(f => f.id === payload.floorId)
         const cell  = floor?.grid[payload.y]?.[payload.x]
-        if (!cell?.rack)                             return { ok: false, error: 'Pas de rack ici' }
+        console.log(`[install_server] floor=${payload.floorId} x=${payload.x} y=${payload.y} slot=${payload.slot} type=${payload.serverType}`)
+        console.log(`[install_server] cell=`, cell ? (cell.rack ? 'rack ok' : 'no rack') : 'no cell')
+        if (!cell?.rack)                              return { ok: false, error: 'Pas de rack ici' }
+        console.log(`[install_server] slot value=`, cell.rack.servers[payload.slot])
         if (cell.rack.servers[payload.slot] !== null) return { ok: false, error: 'Slot occupé' }
         const def = SERVER_TYPES[payload.serverType]
+        console.log(`[install_server] def=`, def ? 'ok' : 'undefined', ' unlocked=', isServerTypeUnlocked(state, payload.serverType), ' money=', state.money, ' cost=', def?.cost)
         if (!def)                                    return { ok: false, error: 'Type inconnu' }
         if (!isServerTypeUnlocked(state, payload.serverType))
                                                      return { ok: false, error: 'Non débloqué' }
