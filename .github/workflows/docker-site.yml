@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/datacenter-site
+  IMAGE: ghcr.io/masutayunikon/datacenter-site
 
 permissions:
   contents: read
