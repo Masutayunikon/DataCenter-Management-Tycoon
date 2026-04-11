@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.3](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.2...datacenter-site-v2.0.3) (2026-04-11)
+
+
+### Bug Fixes
+
+* remove release-please manifest from repo, let it self-manage ([110f974](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/110f974373b695189229f1b3c92fb7e6e894f4b2))
+* separate PRs with version in title, align tag-name with actual tags ([159b8c0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/159b8c0cb8f30c6431f2702ad99c4459d7b997af))
+* trigger release-please ([c3ff683](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/c3ff683a0ecd0b123ce335e4bd8bac1b83b9a9f1))
+
 ## [2.0.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.1...datacenter-site-v2.0.2) (2026-04-11)
 
 
