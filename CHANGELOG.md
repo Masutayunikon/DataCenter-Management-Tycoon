@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.0...datacenter-site-v2.0.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* build Docker only on version tags, eliminate double builds ([833f159](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/833f1596fcd452bc0ff0642896fc33d89938d502))
+
 ## [2.0.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v1.0.0...datacenter-site-v2.0.0) (2026-04-11)
 
 
