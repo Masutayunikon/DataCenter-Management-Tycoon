@@ -18,15 +18,15 @@ const __dir        = dirname(fileURLToPath(import.meta.url))
 const configPath   = join(__dir, 'server.config.json')
 const examplePath  = join(__dir, 'config.example.json')
 
-if (!existsSync(configPath)) {
-  console.error(
-    '[Server] server.config.json not found.\n' +
-    '         Copy config.example.json → server.config.json and fill in your values.'
-  )
-  process.exit(1)
+let CONFIG = {}
+if (existsSync(configPath)) {
+  CONFIG = JSON.parse(readFileSync(configPath, 'utf-8'))
+} else if (existsSync(examplePath)) {
+  console.warn('[Server] server.config.json not found — using config.example.json defaults.')
+  CONFIG = JSON.parse(readFileSync(examplePath, 'utf-8'))
+} else {
+  console.warn('[Server] No config file found — using built-in defaults.')
 }
-
-const CONFIG = JSON.parse(readFileSync(configPath, 'utf-8'))
 const PORT          = CONFIG.port            ?? 3001
 const MAX_ROOMS     = CONFIG.maxRooms        ?? 10
 const MAX_PLAYERS   = CONFIG.maxPlayersPerRoom ?? 16
