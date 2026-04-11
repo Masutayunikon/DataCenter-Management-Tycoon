@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.1.0...datacenter-site-v2.1.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* trigger release-please ([a7d4fbc](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/a7d4fbc6f08d5fe827d90cb7905a7867b3a3eda1))
+* use repo root as docker context to include src/game imports ([e92574e](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e92574e4ccb22f7516657078d9aa810a2db6bcbf))
+
 ## [2.1.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.0.3...datacenter-site-v2.1.0) (2026-04-11)
 
 
