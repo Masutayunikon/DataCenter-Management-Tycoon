@@ -1,0 +1,56 @@
+name: Rebase release PRs
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Rebase open release-please PRs
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          branches=$(gh pr list --search "head:release-please--branches--main" --json headRefName --jq '.[].headRefName')
+
+          for branch in $branches; do
+            echo "→ Rebasing $branch"
+            git fetch origin "$branch"
+            git checkout -b "tmp-$branch" "origin/$branch"
+
+            if git rebase origin/main; then
+              git push origin "HEAD:$branch" --force-with-lease
+              echo "✓ $branch rebased"
+            else
+              # Résoudre le conflict du manifest en fusionnant les deux JSON
+              if [ -f .release-please-manifest.json ]; then
+                OURS=$(git show "origin/$branch:.release-please-manifest.json")
+                git checkout origin/main -- .release-please-manifest.json
+                # Fusionner : garder les valeurs de la PR par-dessus main
+                echo "$OURS" | jq --slurpfile main .release-please-manifest.json '$main[0] + .' > /tmp/merged-manifest.json
+                mv /tmp/merged-manifest.json .release-please-manifest.json
+                git add .release-please-manifest.json
+                GIT_EDITOR=true git rebase --continue
+                git push origin "HEAD:$branch" --force-with-lease
+                echo "✓ $branch rebased (manifest conflict resolved)"
+              else
+                git rebase --abort
+                echo "✗ $branch — conflict non résolvable automatiquement"
+              fi
+            fi
+
+            git checkout main
+            git branch -D "tmp-$branch" 2>/dev/null || true
+          done
