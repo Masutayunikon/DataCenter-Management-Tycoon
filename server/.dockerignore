@@ -1,0 +1,4 @@
+node_modules
+npm-debug.log
+saves/
+server.config.json

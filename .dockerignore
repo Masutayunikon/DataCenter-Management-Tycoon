@@ -1,0 +1,13 @@
+node_modules
+server/node_modules
+lobby/node_modules
+dist/
+lobby/public/
+.git
+.github
+.idea
+server/saves/
+server/server.config.json
+npm-debug.log
+*.log
+rtk.exe

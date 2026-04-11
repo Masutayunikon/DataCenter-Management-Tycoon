@@ -1,0 +1,25 @@
+const MILESTONES = [
+  { id: 'FIRST_CLIENT',    label: '🎉 Premier Client !',           desc: 'Votre tout premier client a été hébergé.',                    condition: s => s.totalClientsServed >= 1 },
+  { id: 'TEN_CLIENTS',     label: '👥 Dix Clients Simultanés',     desc: '10 clients actifs en même temps.',                             condition: s => s.clients.length >= 10 },
+  { id: 'REP_25',          label: '⭐ Réputation 25',              desc: 'Réputation atteinte : 25.',                                    condition: s => s.reputation >= 25 },
+  { id: 'REP_50',          label: '🌟 Réputation 50',              desc: 'Réputation atteinte : 50.',                                    condition: s => s.reputation >= 50 },
+  { id: 'REP_75',          label: '🏆 Réputation 75',              desc: 'Réputation atteinte : 75.',                                    condition: s => s.reputation >= 75 },
+  { id: 'EARNED_10K',      label: '💰 10 000 $ Gagnés',            desc: 'Revenus cumulés : $10,000.',                                   condition: s => s.totalEarned >= 10000 },
+  { id: 'EARNED_100K',     label: '💎 100 000 $ Gagnés',           desc: 'Revenus cumulés : $100,000.',                                  condition: s => s.totalEarned >= 100000 },
+  { id: 'EARNED_1M',       label: '🚀 Un Million !',               desc: 'Revenus cumulés : $1,000,000.',                                condition: s => s.totalEarned >= 1000000 },
+  { id: 'FIRST_FLOOR',     label: '🏢 Deuxième Étage',             desc: 'Vous avez acheté votre deuxième étage.',                       condition: s => s.floors.length >= 2 },
+  { id: 'THREE_FLOORS',    label: '🏗 Datacenter Multi-Niveaux',   desc: 'Trois étages opérationnels.',                                  condition: s => s.floors.length >= 3 },
+  { id: 'FIRST_GPU',       label: '🎮 Serveur GPU Installé',        desc: 'Premier serveur GPU en production.',                           condition: s => s.unlockedSkills?.includes('GPU_UNLOCK') },
+  { id: 'FIRST_MISSION',   label: '📋 Première Mission Résolue',   desc: 'Votre première mission client complétée avec succès.',         condition: s => s.totalMissionsCompleted >= 1 },
+  { id: 'TEN_MISSIONS',    label: '🏅 Expert Missions',            desc: '10 missions résolues.',                                        condition: s => s.totalMissionsCompleted >= 10 },
+  { id: 'UPTIME_30',       label: '⏱ 30 Jours Sans Panne',        desc: '30 jours consécutifs sans aucune panne serveur.',              condition: s => s.longestUptime >= 30 },
+  { id: 'GREEN',           label: '🌱 Datacenter Vert',            desc: 'Énergie verte activée — vous réduisez votre empreinte carbone.', condition: s => s.greenEnergy },
+  { id: 'ENTERPRISE_FIRST',label: '🏢 Premier Contrat Entreprise', desc: 'Premier client entreprise hébergé avec succès.',              condition: s => s.clients.some(c => c.isEnterprise) },
+  { id: 'AI_FIRST',        label: '🤖 IA dans le Cloud',           desc: 'Premier client IA Cloud actif.',                               condition: s => s.clients.some(c => c.serviceId === 'AI_CLOUD') },
+  { id: 'STREAMING_FIRST', label: '📺 Streaming Lancé',            desc: 'Premier client Streaming actif.',                              condition: s => s.clients.some(c => c.serviceId === 'STREAMING') },
+  { id: 'SURVIVED_HACK',   label: '🔐 Hack Survécu',               desc: 'Votre datacenter a survécu à une attaque de hackers.',         condition: s => s.eventHistory?.some(e => e.id === 'DDOS_ATTACK') },
+  { id: 'DAY_100',         label: '📅 Centenaire',                 desc: '100 jours d\'exploitation.',                                  condition: s => s.day >= 100 },
+  { id: 'DAY_365',         label: '🎂 Un An d\'Exploitation',      desc: '365 jours d\'exploitation — vous êtes un vrai datacenter !',  condition: s => s.day >= 365 },
+]
+
+export { MILESTONES }

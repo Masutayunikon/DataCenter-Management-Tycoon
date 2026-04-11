@@ -1,0 +1,108 @@
+# DataCenter Tycoon RTS — Claude Context
+
+## Architecture
+
+**Stack**: Vue 3 (Composition API, `<script setup>`), no TypeScript, no build-time types.
+**State**: Single `reactive(createGameState())` in `App.vue`, passed as prop to all components.
+**Loop**: `requestAnimationFrame` in `App.vue`; `processDayTick(state)` fires every `DAY_DURATION_MS=10000ms` (scaled by `state.speed`).
+
+### Key files
+
+| File | Role |
+|------|------|
+| `src/game/GameState.js` | Pure data: `SERVER_TYPES`, `SERVICES`, `SKILLS`, `createGameState()`, `createServer()`, `createRack()`, `createClient()`, `createTicket()`, `createFloor()` |
+| `src/game/SimulationEngine.js` | **Thin orchestrator** — `processDayTick` + re-exports full public API. Import everything from here. |
+| `src/game/SimUtils.js` | Pure helpers (no side effects): `clamp`, `allGridCells`, `getServerAt`, `serverFits`, `findBestServer`, `getCompatibleServers`, … |
+| `src/game/TicketEngine.js` | `addTicket`, `addTicketRaw`, `hasRecentTicket` |
+| `src/game/ServerEngine.js` | Server failures, heat, power, repair, restart, move, remove |
+| `src/game/ClientEngine.js` | Client generation, assignment (incl. enterprise), satisfaction, departures, reputation |
+| `src/game/EconomyEngine.js` | Revenue, electricity/maintenance/employee costs, `applyPriceChange`, `generateTickets` |
+| `src/game/GridEngine.js` | `unlockCell`, `buyFloor`, `getUnlockCost`, `isAdjacentToUnlocked` |
+| `src/game/SkillEngine.js` | `applySkill`, `isServerTypeUnlocked` |
+| `src/game/EventSystem.js` | Random events: `tryTriggerEvent`, `tickEvents`, `getEventMultiplier`, `getEventBonus` |
+| `src/App.vue` | Root: game loop, modal overlays (Shop/Skills as drawers), wires all events |
+| `src/components/TopBar.vue` | Stats popup on hover, queue badge, Shop/Skills buttons, speed controls |
+| `src/components/GameCanvas.vue` | Grid rendering, floor tabs, cell interaction |
+| `src/components/RightPanel.vue` | Tabs: Clients / Services / Tickets (width: `clamp(220px,20vw,300px)`) |
+| `src/components/RackPanel.vue` | Rack detail: install servers, move clients, terminal, repair/restart |
+| `src/components/ClientsPanel.vue` | Active clients + queue with assign UI |
+| `src/components/ServicesPanel.vue` | Price sliders per service, calls `applyPriceChange` |
+| `src/components/TicketsPanel.vue` | Support tickets list |
+| `src/components/ShopPanel.vue` | Buy racks, server types, employees |
+| `src/components/SkillTreePanel.vue` | Skill tree by category, calls `applySkill` |
+| `src/components/TerminalModal.vue` | CLI simulation per server |
+| `src/components/PricePanel.vue` | (Unused/old) pricing UI |
+
+## GameState shape (key fields)
+
+```js
+{
+  money, day, speed, reputation,
+  revenue, electricityCost, maintenanceCost, employeeCost,
+  power, heat,
+  servicePrices: { VPS, DEDICATED, STORAGE, GAMING, ENTERPRISE },
+  serviceSlots: { VPS: 0, DEDICATED: 0, STORAGE: 0, GAMING: 0 },  // 0 = disabled, N = max concurrent clients
+  floors: [{ id, grid: [[{ x,y,locked,rack }]] }],
+  currentFloor: 0,
+  clients: [{
+    id, name, serviceId, cpuDemand, ramDemand, diskDemand,
+    satisfaction, daysUnhappy, durationExpected, dayArrived,
+    serverPos,           // single-server clients
+    isEnterprise,        // true for ENTERPRISE service
+    requiredServers,     // 2–4
+    serverPositions,     // active slots (enterprise)
+    pendingPositions,    // slots being filled in queue (enterprise)
+  }],
+  clientQueue: [...],
+  tickets: [{ id, type, message, severity, day, read, serverPos, clientId }],
+  activeEvents: [...],
+  unlockedSkills: [],   // skill IDs pushed by applySkill()
+  skillPoints:    0,    // earned on contract completion (+1 regular, +3 enterprise); spent in skill tree
+  employees: { assignment: 0, support: 0, security: 0 },
+  powerCap: 3000,           // W; overload penalty above this; increased by POWER_UPGRADE skill
+}
+```
+
+## Server types (GameState.js)
+
+`BASIC`, `BALANCED`, `PERFORMANCE`, `GPU` (GPU requires `GPU_UNLOCK` skill).
+Each `createServer()` has `lifetimeRestarts: 0` — never resets, degrades restart chance (80% - lifetime×15%, floor 5%).
+
+## Skills system (SkillEngine.js)
+
+- `applySkill(state, skillId)` — validates `spReq`/prereqs/cost, deducts money, pushes id to `unlockedSkills`, upgrades `SERVER_TYPES[type]` in-place + all existing servers; handles `stateEffect` for SERVICE_EXPAND and POWER_UPGRADE
+- `isServerTypeUnlocked(state, type)` — BASIC always, others need corresponding `TYPE_UNLOCK` skill
+- Passive effects checked each tick via `state.unlockedSkills.includes('SKILL_ID')`
+- All skills use `spReq` (skill points) NOT `repReq` — SkillTreePanel shows `state.skillPoints`
+- Skills: `BALANCED_UNLOCK`, `PERFORMANCE_UNLOCK`, `GPU_UNLOCK`, `BASIC_PLUS/2/3`, `BALANCED_PLUS/2`, `PERFORMANCE_PLUS/2`, `GPU_PLUS/2`, `EMPLOYEE_ASSIGN/SUPPORT/SECURITY_UNLOCK`, `COOLING_ADV`, `MONITORING`, `POWER_OPT`, `POWER_UPGRADE`, `CLIENT_RETENTION`, `PRICING_FLEX`, `PREMIUM_SLA`, `SERVICE_EXPAND`
+
+## Enterprise clients
+
+- Generated by `generateEnterpriseClients(state)` (called each tick from SimulationEngine)
+- Requires `state.reputation >= 20`; rate 0–0.08/j; `SERVICES.ENTERPRISE.hidden = true` (not in ServicesPanel)
+- `client.isEnterprise=true`, `requiredServers` 2–4, `serverPositions[]`, `pendingPositions[]`
+- `client.dailyRate` = 150–500 $/j (revenue replaces servicePrices lookup)
+- Contracts 180–365 days; earn 3 SP on expiry, 2 SP on renewal
+- Per-slot demand = `Math.ceil(total / requiredServers)` for capacity checks
+
+## Service slots / electricity
+
+- `serviceSlots` — integer slot count per service (0 = OFF); clients arrive only if `active + queued < slots`; ServicesPanel shows fill bar + +/−10/1 controls; reducing slots blocked at active client count
+- SERVICE_EXPAND skill: +25% arrival rate passive (checked in `getArrivalRateForService` via `unlockedSkills`)
+- `powerCap` (default 3000W) — overload triggers penalty $0.08/excess W + critical ticket each tick; POWER_UPGRADE adds +2000W
+- `ELECTRICITY_RATE = 0.015` (3× higher than before)
+
+## Reputation mechanics
+
+- Gain × 5 slower (`* 0.0006`), loss faster (`* 0.012`), decay without clients (`-0.15`)
+- Diminishing returns: `Math.max(0.02, 1.0 - (rep/100)*0.98)`
+
+## CSS conventions
+
+- Colors: `#0d1117` bg, `#161b22` panel, `#21262d` border-light, `#30363d` border, `#8b949e` muted, `#e6edf3` text, `#58a6ff` blue/accent, `#3fb950` green, `#d29922` orange, `#f85149` red
+- Font: always `monospace`
+- Flex layout: always set `min-height: 0` on flex children that scroll
+
+## Drawer modals (App.vue)
+
+Shop and Skills open as right-side drawer overlays (`z-index: 300`) triggered by TopBar buttons (`@open-shop`, `@open-skills`). Close on overlay click or ✕ button.

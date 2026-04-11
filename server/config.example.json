@@ -1,0 +1,18 @@
+{
+  "_comment": "Copiez ce fichier en server.config.json et remplissez vos valeurs",
+
+  "name": "Mon Serveur DataCenter",
+  "description": "Un serveur de jeu DataCenter Tycoon",
+  "imageUrl": "",
+
+  "port": 3001,
+  "publicUrl": "http://localhost:3001",
+
+  "maxRooms": 10,
+  "maxPlayersPerRoom": 16,
+
+  "isPrivate": false,
+  "serverPassword": "",
+
+  "lobbyUrl": "https://your-lobby-url.com"
+}
