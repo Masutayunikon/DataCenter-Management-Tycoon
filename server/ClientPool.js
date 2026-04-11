@@ -3,7 +3,16 @@
 // Flow : generatePoolClients → distributeClients → GameRoom._tick pushes to queue
 // Template clients now come from this pool (no longer generated separately).
 
-import { SERVICES } from '../src/game/data/services.js'
+// Inline copy of SERVICES data — only the fields needed by the server
+const SERVICES = {
+  VPS:        { cpuMin: 5,   cpuMax: 15,  ramMin: 1,  ramMax: 4,   diskMin: 5,  diskMax: 20,  basePrice: 8   },
+  DEDICATED:  { cpuMin: 80,  cpuMax: 180, ramMin: 16, ramMax: 64,  diskMin: 20, diskMax: 100, basePrice: 45  },
+  STORAGE:    { cpuMin: 5,   cpuMax: 15,  ramMin: 2,  ramMax: 8,   diskMin: 80, diskMax: 400, basePrice: 15  },
+  GAMING:     { cpuMin: 40,  cpuMax: 80,  ramMin: 8,  ramMax: 32,  diskMin: 10, diskMax: 50,  basePrice: 30  },
+  STREAMING:  { cpuMin: 20,  cpuMax: 60,  ramMin: 4,  ramMax: 16,  diskMin: 40, diskMax: 200, basePrice: 22  },
+  AI_CLOUD:   { cpuMin: 60,  cpuMax: 200, ramMin: 16, ramMax: 128, diskMin: 20, diskMax: 100, basePrice: 80  },
+  ENTERPRISE: { cpuMin: 150, cpuMax: 600, ramMin: 30, ramMax: 200, diskMin: 50, diskMax: 400, basePrice: 200 },
+}
 
 // ─── Market demand weights (changes annually) ─────────────────────────────────
 
