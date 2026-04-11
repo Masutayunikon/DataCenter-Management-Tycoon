@@ -24,6 +24,18 @@
       "env_variable": "SERVER_NAME"
     },
     {
+      "type": "text",
+      "label": "Description du serveur",
+      "required": false,
+      "env_variable": "SERVER_DESCRIPTION"
+    },
+    {
+      "type": "url",
+      "label": "Image URL du serveur",
+      "required": false,
+      "env_variable": "SERVER_IMAGE_URL"
+    },
+    {
       "type": "url",
       "label": "URL publique du serveur (WebSocket)",
       "hint": "Ex: https://game.mondomaine.com — utilisée par les clients pour se connecter",

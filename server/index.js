@@ -35,6 +35,8 @@ const SERVER_PASS   = process.env.SERVER_PASSWORD           || CONFIG.serverPass
 const LOBBY_URL     = process.env.LOBBY_URL                 || CONFIG.lobbyUrl          || ''
 const PUBLIC_URL    = process.env.PUBLIC_URL                || CONFIG.publicUrl         || `http://localhost:${PORT}`
 const SERVER_NAME   = process.env.SERVER_NAME               || CONFIG.name              || 'DataCenter Tycoon Server'
+const SERVER_DESC   = process.env.SERVER_DESCRIPTION        || CONFIG.description       || ''
+const SERVER_IMAGE  = process.env.SERVER_IMAGE_URL          || CONFIG.imageUrl          || ''
 
 // ─── HTTP + Socket.io setup ───────────────────────────────────────────────────
 
@@ -50,8 +52,8 @@ app.use(express.json())
 app.get('/info', (req, res) => {
   res.json({
     name:              SERVER_NAME,
-    description:       CONFIG.description ?? '',
-    imageUrl:          CONFIG.imageUrl    ?? '',
+    description:       SERVER_DESC,
+    imageUrl:          SERVER_IMAGE,
     isPrivate:         IS_PRIVATE,
     maxRooms:          MAX_ROOMS,
     maxPlayersPerRoom: MAX_PLAYERS,
@@ -68,8 +70,8 @@ app.get('/api/servers', (req, res) => {
     servers: [{
       id:          'local',
       name:        SERVER_NAME,
-      description: CONFIG.description ?? '',
-      imageUrl:    CONFIG.imageUrl    ?? '',
+      description: SERVER_DESC,
+      imageUrl:    SERVER_IMAGE,
       isPrivate:   IS_PRIVATE,
       playerCount,
       roomCount:   rooms.size,
@@ -110,8 +112,8 @@ setInterval(pruneEmptyRooms, 60_000)
 
 const lobby = new LobbyClient(LOBBY_URL, {
   name:              SERVER_NAME,
-  description:       CONFIG.description ?? '',
-  imageUrl:          CONFIG.imageUrl    ?? '',
+  description:       SERVER_DESC,
+  imageUrl:          SERVER_IMAGE,
   isPrivate:         IS_PRIVATE,
   maxRooms:          MAX_ROOMS,
   maxPlayersPerRoom: MAX_PLAYERS,
@@ -139,8 +141,8 @@ io.on('connection', socket => {
     cb({
       ok:    true,
       name:  SERVER_NAME,
-      description: CONFIG.description ?? '',
-      imageUrl: CONFIG.imageUrl ?? '',
+      description: SERVER_DESC,
+      imageUrl: SERVER_IMAGE,
       isPrivate: IS_PRIVATE,
       maxRooms: MAX_ROOMS,
       maxPlayersPerRoom: MAX_PLAYERS,
