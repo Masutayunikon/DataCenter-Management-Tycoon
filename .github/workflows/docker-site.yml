@@ -2,7 +2,7 @@ name: Docker — Site & Lobby
 
 on:
   push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+    tags: ['datacenter-site-v[0-9]+.[0-9]+.[0-9]+*']
   workflow_dispatch:
 
 env:
@@ -34,8 +34,7 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=datacenter-site-v(.*),group=1
             type=raw,value=latest
 
       - name: Build & push

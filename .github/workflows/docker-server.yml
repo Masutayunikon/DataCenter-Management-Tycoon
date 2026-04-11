@@ -2,7 +2,7 @@ name: Docker — Game Server
 
 on:
   push:
-    tags: ['server-v[0-9]+.[0-9]+.[0-9]+*']
+    tags: ['datacenter-game-server-v[0-9]+.[0-9]+.[0-9]+*']
   workflow_dispatch:
 
 env:
@@ -34,7 +34,7 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=match,pattern=server-v(.*),group=1
+            type=match,pattern=datacenter-game-server-v(.*),group=1
             type=raw,value=latest
 
       - name: Build & push
