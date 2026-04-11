@@ -2,18 +2,7 @@ name: Docker — Site & Lobby
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'lobby/**'
-      - 'index.html'
-      - 'vite.config.js'
-      - 'vite-plugin-lobby.js'
-      - 'package*.json'
-      - 'Dockerfile'
-      - '.dockerignore'
-  release:
-    types: [published]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
   workflow_dispatch:
 
 env:
@@ -45,10 +34,9 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest
 
       - name: Build & push
         uses: docker/build-push-action@v5

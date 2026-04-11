@@ -6,6 +6,7 @@
     ".": {
       "release-type": "node",
       "package-name": "datacenter-site",
+      "tag-name": "v${version}",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
@@ -15,6 +16,7 @@
     "server": {
       "release-type": "node",
       "package-name": "datacenter-game-server",
+      "tag-name": "server-v${version}",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true
