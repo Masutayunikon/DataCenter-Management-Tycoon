@@ -42,8 +42,6 @@ coverage/
 *.tgz
 rtk.exe
 
-# Release Please (auto-managed, derived from git tags)
-.release-please-manifest.json
 
 # Claude Code internals
 .claude/
