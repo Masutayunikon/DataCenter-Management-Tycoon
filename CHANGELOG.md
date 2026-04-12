@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.2.0...datacenter-site-v2.3.0) (2026-04-12)
+
+
+### Features
+
+* open shop on empty canvas cell click, add reputation gate for specialization skills, README ([884193b](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/884193ba837a0b98743aa970a4f62632be0d2671))
+* require 365 days of single-service commitment to become specialist ([e890b22](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e890b2221d0073b59772c224da22b9e7283c1578))
+
+
+### Bug Fixes
+
+* rebalance prices, remove server upgrade skills, add gameplay TODO ([2198c19](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/2198c19d868b2e8cebb1ca4e91bb2c5cdffad2a2))
+* specialist detection now includes template-mode services ([6c721ef](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6c721ef9947c626369c7295aa4ec8cf25096ba84))
+
 ## [2.2.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.1.1...datacenter-site-v2.2.0) (2026-04-11)
 
 
