@@ -37,8 +37,15 @@ export function computeDeltas(state, prevSnapStr) {
 
 export function playerMeta(player) {
   const state = player.state
-  const activeServices = Object.entries(state.serviceSlots ?? {})
-    .filter(([, v]) => v > 0).map(([k]) => k)
+  const slots   = state.serviceSlots   ?? {}
+  const modes   = state.serviceModes   ?? {}
+  const tmpls   = state.serviceTemplates ?? {}
+  const allSvcs = new Set([...Object.keys(slots), ...Object.keys(tmpls)])
+  const activeServices = [...allSvcs].filter(svc => {
+    const mode = modes[svc] ?? 'auto'
+    if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
+    return (slots[svc] ?? 0) > 0
+  })
   const isSpecialist = activeServices.length === 1 ? activeServices[0] : null
 
   return {

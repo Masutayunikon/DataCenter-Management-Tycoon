@@ -50,8 +50,15 @@ export function detectSpecialists(players) {
   const specialists = new Map()
   for (const [, player] of players) {
     if (!player.connected || !player.state) continue
-    const activeServices = Object.entries(player.state.serviceSlots ?? {})
-      .filter(([, v]) => v > 0).map(([k]) => k)
+    const slots   = player.state.serviceSlots   ?? {}
+    const modes   = player.state.serviceModes   ?? {}
+    const tmpls   = player.state.serviceTemplates ?? {}
+    const allSvcs = new Set([...Object.keys(slots), ...Object.keys(tmpls)])
+    const activeServices = [...allSvcs].filter(svc => {
+      const mode = modes[svc] ?? 'auto'
+      if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
+      return (slots[svc] ?? 0) > 0
+    })
     if (activeServices.length === 1) {
       const svc = activeServices[0]
       if (!specialists.has(svc)) specialists.set(svc, [])

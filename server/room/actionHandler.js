@@ -192,8 +192,16 @@ export async function processAction(room, socketId, type, payload) {
         if (slots < tender.minSlots)
           return { ok: false, error: `Slots ${tender.serviceId} insuffisants (min ${tender.minSlots})` }
         if (tender.type === 'specialist') {
-          const active = Object.entries(state.serviceSlots ?? {}).filter(([, v]) => v > 0)
-          if (active.length !== 1 || active[0][0] !== tender.serviceId)
+          const slots  = state.serviceSlots   ?? {}
+          const modes  = state.serviceModes   ?? {}
+          const tmpls  = state.serviceTemplates ?? {}
+          const allSvcs = new Set([...Object.keys(slots), ...Object.keys(tmpls)])
+          const active = [...allSvcs].filter(svc => {
+            const mode = modes[svc] ?? 'auto'
+            if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
+            return (slots[svc] ?? 0) > 0
+          })
+          if (active.length !== 1 || active[0] !== tender.serviceId)
             return { ok: false, error: `Réservé aux spécialistes ${tender.serviceId}` }
         }
 
