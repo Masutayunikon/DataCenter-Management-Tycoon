@@ -46,7 +46,11 @@ export function playerMeta(player) {
     if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
     return (slots[svc] ?? 0) > 0
   })
-  const isSpecialist = activeServices.length === 1 ? activeServices[0] : null
+  const specializationDays = player.specializationDays ?? 0
+  const isSpecialist = (activeServices.length === 1 && specializationDays >= 365)
+    ? activeServices[0] : null
+  const specializationProgress = activeServices.length === 1
+    ? Math.min(365, specializationDays) : 0
 
   return {
     id:               player.id,
@@ -62,6 +66,7 @@ export function playerMeta(player) {
     serviceModes:     state.serviceModes ?? {},
     serviceTemplates: state.serviceTemplates ?? {},
     isSpecialist,
+    specializationProgress,
   }
 }
 

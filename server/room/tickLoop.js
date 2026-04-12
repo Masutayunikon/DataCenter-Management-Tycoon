@@ -188,7 +188,26 @@ export function executeTick(room) {
   if (rePooled > 0)
     console.log(`[Room ${room.id}] Day ${room.shared.day}: re-pooled ${rePooled} expired queue clients`)
 
-  // ── 5. Weekly pool refresh + daily distribution ────────────────────────────
+  // ── 5. Specialization streak tracking ────────────────────────────────────
+  for (const [, player] of room.players) {
+    if (!player.connected || !player.state) continue
+    const slots  = player.state.serviceSlots   ?? {}
+    const modes  = player.state.serviceModes   ?? {}
+    const tmpls  = player.state.serviceTemplates ?? {}
+    const allSvcs = new Set([...Object.keys(slots), ...Object.keys(tmpls)])
+    const activeCount = [...allSvcs].filter(svc => {
+      const mode = modes[svc] ?? 'auto'
+      if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
+      return (slots[svc] ?? 0) > 0
+    }).length
+    if (activeCount === 1) {
+      player.specializationDays = (player.specializationDays ?? 0) + 1
+    } else {
+      player.specializationDays = 0
+    }
+  }
+
+  // ── 6. Weekly pool refresh + daily distribution ────────────────────────────
   const specialists = detectSpecialists(room.players)
 
   if (room.shared.day % 7 === 1) {

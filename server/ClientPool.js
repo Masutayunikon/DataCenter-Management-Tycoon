@@ -59,7 +59,7 @@ export function detectSpecialists(players) {
       if (mode === 'templates') return (tmpls[svc]?.length ?? 0) > 0
       return (slots[svc] ?? 0) > 0
     })
-    if (activeServices.length === 1) {
+    if (activeServices.length === 1 && (player.specializationDays ?? 0) >= 365) {
       const svc = activeServices[0]
       if (!specialists.has(svc)) specialists.set(svc, [])
       specialists.get(svc).push(player.id)

@@ -203,6 +203,8 @@ export async function processAction(room, socketId, type, payload) {
           })
           if (active.length !== 1 || active[0] !== tender.serviceId)
             return { ok: false, error: `Réservé aux spécialistes ${tender.serviceId}` }
+          if ((player.specializationDays ?? 0) < 365)
+            return { ok: false, error: `Spécialisation insuffisante (${player.specializationDays ?? 0}/365 jours)` }
         }
 
         tender.applicants.push(socketId)

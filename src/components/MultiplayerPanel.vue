@@ -44,8 +44,13 @@
               <span class="p-name">{{ p.name }}</span>
               <span v-if="p.id === mp.roomInfo.value?.gameMasterId" class="gm-badge">GM</span>
               <span v-if="p.isSpecialist" class="spec-badge" :title="`Spécialiste ${p.isSpecialist}`">
-                {{ serviceIcon(p.isSpecialist) }}
+                {{ serviceIcon(p.isSpecialist) }} Spécialiste
               </span>
+              <span
+                v-else-if="p.specializationProgress > 0"
+                class="spec-progress"
+                :title="`En cours de spécialisation : ${p.specializationProgress}/365 jours`"
+              >{{ serviceIcon(allPlayerServices(p)[0]) }} {{ p.specializationProgress }}/365j</span>
             </div>
             <div class="p-stats">
               <span class="p-stat green">${{ p.money?.toLocaleString() }}</span>
@@ -515,7 +520,8 @@ function svcColor(svc) {
   padding: 0 4px;
   border-radius: 3px;
 }
-.spec-badge { font-size: 11px; }
+.spec-badge { font-size: 11px; color: #3fb950; font-weight: bold; }
+.spec-progress { font-size: 10px; color: #d29922; }
 
 .p-stats {
   display: flex;
