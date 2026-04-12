@@ -13,13 +13,13 @@ const SKILLS = {
     id: 'PERFORMANCE_UNLOCK', label: 'Serveur Performance',
     desc: 'Débloque les serveurs haute performance',
     category: 'servers', spReq: 12, cost: 6000,
-    requires: ['BALANCED_UNLOCK'], icon: '⚡',
+    requires: ['BALANCED_UNLOCK'], icon: '⚡', repReq: 50,
   },
   GPU_UNLOCK: {
     id: 'GPU_UNLOCK', label: 'Serveur GPU',
     desc: 'Débloque les serveurs GPU (gaming / IA)',
     category: 'servers', spReq: 20, cost: 15000,
-    requires: ['PERFORMANCE_UNLOCK'], icon: '🎮',
+    requires: ['PERFORMANCE_UNLOCK'], icon: '🎮', repReq: 70,
   },
 
   // Upgrades Services — Capacité & Marché
@@ -294,7 +294,7 @@ const SKILLS = {
     id: 'STORAGE_DENSE_UNLOCK', label: 'Serveur Stockage Dense',
     desc: 'Débloque les serveurs haute densité de stockage (2TB+, idéal Streaming)',
     category: 'servers', spReq: 14, cost: 9000,
-    requires: ['BALANCED_UNLOCK'], icon: '💾',
+    requires: ['BALANCED_UNLOCK'], icon: '💾', repReq: 50,
   },
   AUTO_SCALING: {
     id: 'AUTO_SCALING', label: 'Auto-Scaling',

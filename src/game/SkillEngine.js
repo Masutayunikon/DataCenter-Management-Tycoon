@@ -13,6 +13,8 @@ function applySkill(state, skillId) {
     return { success: false, message: `Points insuffisants (${skill.spReq} pts requis, vous avez ${sp})` }
   if (skill.requires.some(r => !(state.unlockedSkills ?? []).includes(r)))
     return { success: false, message: 'Prérequis non remplis' }
+  if (skill.repReq && (state.reputation ?? 0) < skill.repReq)
+    return { success: false, message: `Réputation insuffisante (${skill.repReq} requis, vous avez ${Math.floor(state.reputation ?? 0)})` }
   if (state.money < skill.cost)
     return { success: false, message: `Fonds insuffisants ($${skill.cost} requis)` }
 

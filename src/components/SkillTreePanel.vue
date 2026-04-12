@@ -46,6 +46,9 @@
           <span class="skill-rep" :style="{ color: spMet(skill) ? '#3fb950' : '#f85149' }">
             🔷 {{ skill.spReq }} SP
           </span>
+          <span v-if="skill.repReq" class="skill-rep" :style="{ color: repMet(skill) ? '#3fb950' : '#d29922' }">
+            ⭐ Rep {{ skill.repReq }}
+          </span>
           <span class="skill-cost">${{ skill.cost.toLocaleString() }}</span>
           <button
             v-if="!isOwned(skill)"
@@ -145,18 +148,24 @@ function spMet(skill) {
   return (props.gameState.skillPoints ?? 0) >= skill.spReq
 }
 
+function repMet(skill) {
+  if (!skill.repReq) return true
+  return (props.gameState.reputation ?? 0) >= skill.repReq
+}
+
 function requiresMet(skill) {
   return skill.requires.every(r => (props.gameState.unlockedSkills ?? []).includes(r))
 }
 
 function canBuy(skill) {
-  return !isOwned(skill) && spMet(skill) && requiresMet(skill) && props.gameState.money >= skill.cost
+  return !isOwned(skill) && spMet(skill) && repMet(skill) && requiresMet(skill) && props.gameState.money >= skill.cost
 }
 
 function statusLabel(skill) {
   if (isOwned(skill)) return '✓'
   if (!requiresMet(skill)) return '🔗'
   if (!spMet(skill)) return '🔒'
+  if (!repMet(skill)) return '⭐'
   if (props.gameState.money < skill.cost) return '💸'
   return '◯'
 }
@@ -164,6 +173,7 @@ function statusLabel(skill) {
 function buyLabel(skill) {
   if (!requiresMet(skill)) return 'Prérequis'
   if (!spMet(skill)) return `${skill.spReq} SP`
+  if (!repMet(skill)) return `Rep ${skill.repReq}`
   if (props.gameState.money < skill.cost) return 'Fonds'
   return 'Acheter'
 }
@@ -172,6 +182,7 @@ function nodeClass(skill) {
   if (isOwned(skill)) return 'owned'
   if (!requiresMet(skill)) return 'locked-req'
   if (!spMet(skill)) return 'locked-rep'
+  if (!repMet(skill)) return 'locked-rep'
   if (props.gameState.money < skill.cost) return 'no-funds'
   return 'available'
 }
