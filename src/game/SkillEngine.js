@@ -22,30 +22,6 @@ function applySkill(state, skillId) {
   if (!state.unlockedSkills) state.unlockedSkills = []
   state.unlockedSkills.push(skillId)
 
-  // Server upgrade — update SERVER_TYPES in-place + all existing servers
-  if (skill.serverUpgrade) {
-    const upg = skill.serverUpgrade
-    const def = SERVER_TYPES[upg.type]
-    if (def) {
-      def.cpuCapacity  = upg.cpuCapacity
-      def.ramCapacity  = upg.ramCapacity
-      def.diskCapacity = upg.diskCapacity
-      def.powerBase    = upg.powerBase
-      def.label = `${upg.type.charAt(0) + upg.type.slice(1).toLowerCase()} ${skill.label.replace(def.label.split(' ')[0], '').trim()}`
-      for (const cell of allGridCells(state)) {
-        if (!cell.rack) continue
-        for (const server of cell.rack.servers) {
-          if (server && server.type === upg.type) {
-            server.cpuCapacity  = upg.cpuCapacity
-            server.ramCapacity  = upg.ramCapacity
-            server.diskCapacity = upg.diskCapacity
-            server.label        = skill.label
-          }
-        }
-      }
-    }
-  }
-
   // Service upgrade — update SERVICES templates
   if (skill.serviceUpgrade) {
     const upg = skill.serviceUpgrade;

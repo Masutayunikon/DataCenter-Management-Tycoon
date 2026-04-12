@@ -121,14 +121,14 @@ function createGameState() {
   return {
     floors:             [createFloor(0, 1, 1)],
     currentFloor:       0,
-    money:              1000,
+    money:              2500,
     settings: {
       masterVolume: 50,
       musicVolume: 50,
       sfxVolume: 80,
     },
     // Per-service prices (player configures these — ENTERPRISE uses client.dailyRate instead)
-    servicePrices:      { VPS: 8, DEDICATED: 45, STORAGE: 15, GAMING: 30, STREAMING: 22, AI_CLOUD: 80 },
+    servicePrices:      { VPS: 14, DEDICATED: 55, STORAGE: 22, GAMING: 30, STREAMING: 22, AI_CLOUD: 80 },
     // Slot counts per service (0 = disabled, N = max concurrent clients accepted)
     serviceSlots:       { VPS: 0, DEDICATED: 0, STORAGE: 0, GAMING: 0, STREAMING: 0, AI_CLOUD: 0 },
     revenue:            0,

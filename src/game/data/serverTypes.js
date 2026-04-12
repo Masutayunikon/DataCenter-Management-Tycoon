@@ -42,8 +42,8 @@ const SERVER_TYPES = {
     diskCapacity: 200,
     powerBase:    450,
     reliability:  0.99,
-    cost:         2500,
-    dailyCost:    60,
+    cost:         2000,
+    dailyCost:    45,
     unlockRep:    999,   // never auto-unlocked by rep — requires skill
     color:        '#a371f7',
   },

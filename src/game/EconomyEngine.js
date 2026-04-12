@@ -6,9 +6,9 @@ import { addTicketRaw, hasRecentTicket } from './TicketEngine.js'
 import { getEventMultiplier } from './EventSystem.js'
 
 const EMPLOYEE_ASSIGN_CAPACITY   = 5   // clients/j par employé d'affectation
-const EMPLOYEE_ASSIGN_DAILY      = 80  // $80/j par employé d'affectation
-const EMPLOYEE_SUPPORT_DAILY     = 100 // $100/j par technicien support
-const EMPLOYEE_SECURITY_DAILY    = 120 // $120/j par technicien sécurité
+const EMPLOYEE_ASSIGN_DAILY      = 50  // $50/j par employé d'affectation
+const EMPLOYEE_SUPPORT_DAILY     = 65  // $65/j par technicien support
+const EMPLOYEE_SECURITY_DAILY    = 85  // $85/j par technicien sécurité
 
 // ─── Step 7: Revenue ─────────────────────────────────────────────────────────
 
