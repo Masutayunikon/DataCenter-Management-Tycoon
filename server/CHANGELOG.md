@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.2.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v2.1.1...datacenter-game-server-v2.2.0) (2026-04-12)
+
+
+### Features
+
+* pool qui ne se reset plus et moins de generation ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+* require 365 days of single-service commitment to become specialist ([e890b22](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e890b2221d0073b59772c224da22b9e7283c1578))
+
+
+### Bug Fixes
+
+* add debug logs for install_server action ([e6bd608](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e6bd608ad01de517e02138853da3961254ff5fe4))
+* add SERVER_DESCRIPTION and SERVER_IMAGE_URL env vars ([188ea0a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/188ea0a94e31350903436e0081a1d592ed5388c6))
+* fix rack ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+* specialist detection now includes template-mode services ([6c721ef](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6c721ef9947c626369c7295aa4ec8cf25096ba84))
+
 ## [2.2.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v2.1.1...datacenter-game-server-v2.2.0) (2026-04-11)
 
 
