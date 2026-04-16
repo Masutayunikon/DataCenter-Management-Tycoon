@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.1...datacenter-site-v2.3.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* bump save version to 6 (settings persistence added) ([535f466](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/535f4664eb674bdeb1ed7e90bad0fbf8f0149a82))
+* sync server with game logic changes (535f4664eb674bdeb1ed7e90bad0fbf8f0149a82) ([99b2839](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/99b2839351d600bb00cd0763511519066b79af6d))
+
 ## [2.3.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.0...datacenter-site-v2.3.1) (2026-04-16)
 
 
