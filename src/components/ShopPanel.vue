@@ -150,13 +150,42 @@
       </template>
     </div>
 
+    <!-- Réseau -->
+    <div class="section-label" style="margin-top: 8px;">RÉSEAU</div>
+    <div
+      v-for="floor in gameState.floors"
+      :key="floor.id"
+      class="shop-item"
+      :class="{ disabled: gameState.money < SWITCH_UPGRADE_COST }"
+    >
+      <div class="item-icon">🔀</div>
+      <div class="item-info">
+        <div class="item-name">Switch — {{ floor.name }}</div>
+        <div class="item-desc">
+          {{ floor.switchBandwidth ?? 1 }} Gbps
+          <span :style="{ color: floor.bandwidthSaturated ? '#f85149' : '#3fb950' }">
+            ({{ Math.round((floor.bandwidthUsed ?? 0) / 10) / 100 }} / {{ floor.switchBandwidth ?? 1 }} Gbps)
+          </span>
+          → +{{ SWITCH_BANDWIDTH_INCREMENT }} Gbps
+        </div>
+        <div class="item-cost">${{ SWITCH_UPGRADE_COST }}</div>
+      </div>
+      <button
+        class="buy-btn"
+        :disabled="gameState.money < SWITCH_UPGRADE_COST"
+        @click="onUpgradeSwitch(floor.id)"
+      >
+        Upgrader
+      </button>
+    </div>
+
   </aside>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { RACK_COST, FLOOR_COST_BASE } from '../game/GameState.js'
-import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY } from '../game/SimulationEngine.js'
+import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY, upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT } from '../game/SimulationEngine.js'
 import { EMPLOYEE_SUPPORT_DAILY, EMPLOYEE_SECURITY_DAILY } from '../game/EconomyEngine.js'
 
 const EMPLOYEE_HIRE_COST = 3000
@@ -212,6 +241,10 @@ function hireEmployee(type) {
 function fireEmployee(type) {
   if (props.gameState.employees[type] <= 0) return
   props.gameState.employees[type]--
+}
+
+function onUpgradeSwitch(floorId) {
+  upgradeSwitch(props.gameState, floorId)
 }
 </script>
 

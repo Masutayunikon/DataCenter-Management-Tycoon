@@ -1,6 +1,8 @@
 // SimulationEngine.js — thin orchestrator; re-exports full public API
 
 import { tryTriggerEvent, tickEvents } from './EventSystem.js'
+import { computeNetworkUsage, upgradeSwitch } from './NetworkEngine.js'
+import { processIncubatorOffer, acceptIncubatorOffer, declineIncubatorOffer } from './IncubatorEngine.js'
 import { generateClients, generateEnterpriseClients, assignQueuedClients, updateSatisfaction, processDepartures, updateReputation } from './ClientEngine.js'
 import { updateServerLoads, processServerFailures, computeHeat, computePower, updateServerUptime, processHacks } from './ServerEngine.js'
 import { calculateRevenue, calculateElectricityCost, calculateMaintenanceCost, calculateEmployeeCost, generateTickets, autoResolveTickets } from './EconomyEngine.js'
@@ -77,6 +79,7 @@ function processDayTick(state) {
   processHacks(state)
   computeHeat(state)
   computePower(state)
+  computeNetworkUsage(state)
   calculateRevenue(state)
   calculateElectricityCost(state)
   calculateMaintenanceCost(state)
@@ -87,6 +90,7 @@ function processDayTick(state) {
   generateTickets(state)
   autoResolveTickets(state)
   generateMissions(state)
+  processIncubatorOffer(state)
   processMissionDeadlines(state)
   updateReputation(state)
   updateServerUptime(state)
@@ -108,3 +112,5 @@ export { unlockCell, buyFloor, getUnlockCost, isAdjacentToUnlocked } from './Gri
 export { applySkill, isServerTypeUnlocked } from './SkillEngine.js'
 export { findBestServer, getServerLoad, getCompatibleServers } from './SimUtils.js'
 export { MILESTONES } from './GameState.js'
+export { upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT } from './NetworkEngine.js'
+export { acceptIncubatorOffer, declineIncubatorOffer } from './IncubatorEngine.js'

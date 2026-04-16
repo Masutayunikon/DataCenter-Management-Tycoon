@@ -318,6 +318,14 @@ function updateSatisfaction(state) {
 
     worstTarget -= getEventBonus(state, 'satisfactionPenalty')
 
+    // Network saturation penalty (-2 target if client's floor is saturated)
+    const clientFloors = new Set(positions.map(p => p.floorId))
+    const netSaturated = [...clientFloors].some(fid => {
+      const fl = (state.floors ?? []).find(f => f.id === fid)
+      return fl?.bandwidthSaturated
+    })
+    if (netSaturated) worstTarget -= 2
+
     const delta = (worstTarget - client.satisfaction) * 0.1
     client.satisfaction = clamp(0, 100, client.satisfaction + delta)
 
@@ -358,7 +366,9 @@ function processDepartures(state) {
       serverMissing = !getClientServer(state, client)
     }
 
-    if (emergencyLeave || churnLeave || expired || serverMissing) {
+    // Incubator clients: cannot churn-leave, only emergency (sat < 15) or server missing
+    const isIncubator = !!client.isIncubator
+    if (emergencyLeave || (!isIncubator && churnLeave) || expired || serverMissing) {
       if (emergencyLeave && !hasRecentTicket(state, 'incident', null, client.id, 2)) {
         state.reputation = clamp(0, 100, state.reputation - 2)
         addTicketRaw(state, 'incident',
@@ -431,8 +441,8 @@ function processDepartures(state) {
           remaining.push(client)
           continue
         }
-        // Normal expiry — bonus SP uniquement pour les entreprises (petite récompense)
-        const sp = client.isEnterprise ? 1 : 0
+        // Normal expiry — bonus SP for enterprise and incubator contracts
+        const sp = client.isEnterprise ? 1 : (client.isIncubator ? 1 : 0)
         if (sp > 0) state.skillPoints = (state.skillPoints ?? 0) + sp
         state.reputation = clamp(0, 100, state.reputation + 0.5)
         addNotification(state,

@@ -166,6 +166,52 @@
       @close="terminalPos = null"
     />
 
+    <!-- ─── Incubateur offer modal ───────────────────────────────────────────── -->
+    <Transition name="drawer">
+      <div
+        v-if="gameState.pendingIncubatorOffer && appMode === 'solo'"
+        class="incubator-overlay"
+      >
+        <div class="incubator-modal">
+          <div class="inc-title">🏢 OFFRE INCUBATEUR</div>
+          <div class="inc-body">
+            <p class="inc-desc">Une startup cherche un hébergeur fiable pour 12 mois.</p>
+            <div class="inc-detail">
+              <span class="inc-label">Service</span>
+              <span class="inc-val">{{ gameState.pendingIncubatorOffer.serviceId }}</span>
+            </div>
+            <div class="inc-detail">
+              <span class="inc-label">Clients</span>
+              <span class="inc-val">{{ gameState.pendingIncubatorOffer.slots }}</span>
+            </div>
+            <div class="inc-detail">
+              <span class="inc-label">Prix fixe</span>
+              <span class="inc-val" style="color:#3fb950">${{ gameState.pendingIncubatorOffer.fixedPrice }}/j par client</span>
+            </div>
+            <div class="inc-detail">
+              <span class="inc-label">Revenu total</span>
+              <span class="inc-val" style="color:#3fb950">
+                ~${{ gameState.pendingIncubatorOffer.fixedPrice * gameState.pendingIncubatorOffer.slots * gameState.pendingIncubatorOffer.durationDays }}
+              </span>
+            </div>
+            <div class="inc-detail">
+              <span class="inc-label">Durée</span>
+              <span class="inc-val">{{ gameState.pendingIncubatorOffer.durationDays }} jours</span>
+            </div>
+            <div class="inc-detail">
+              <span class="inc-label">Expire dans</span>
+              <span class="inc-val" style="color:#d29922">{{ gameState.pendingIncubatorOffer.expiresDay - gameState.day }} j</span>
+            </div>
+            <p class="inc-note">⚠️ Les slots seront bloqués — les clients resteront 12 mois.</p>
+          </div>
+          <div class="inc-actions">
+            <button class="inc-btn inc-accept" @click="onAcceptIncubator">✅ Accepter</button>
+            <button class="inc-btn inc-decline" @click="onDeclineIncubator">❌ Décliner</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <EventNotification :event="latestEvent" />
   </div>
 </template>
@@ -173,7 +219,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { createGameState, createRack, createServer, RACK_COST } from './game/GameState.js'
-import { DAY_DURATION_MS, processDayTick, moveClient, repairServer, restartServer, unlockCell, buyFloor } from './game/SimulationEngine.js'
+import { DAY_DURATION_MS, processDayTick, moveClient, repairServer, restartServer, unlockCell, buyFloor, acceptIncubatorOffer, declineIncubatorOffer } from './game/SimulationEngine.js'
 import { applySkill } from './game/SkillEngine.js'
 import { saveGame, loadGame, hasSave } from './game/SaveSystem.js'
 import { useMultiplayer } from './game/useMultiplayer.js'
@@ -565,6 +611,17 @@ async function onApplySkill(skillId) {
   // In solo mode, SkillTreePanel calls applySkill directly on gameState
 }
 
+function onAcceptIncubator() {
+  const result = acceptIncubatorOffer(gameState)
+  if (result.success) {
+    rightPanelTab.value = 'clients'
+  }
+}
+
+function onDeclineIncubator() {
+  declineIncubatorOffer(gameState)
+}
+
 // ─── Save / Load (solo only) ──────────────────────────────────────────────────
 
 function showSaveMsg(text, ok) {
@@ -922,4 +979,91 @@ function onReset() {
   margin-top: 4px;
 }
 .btn-leave-wait:hover { border-color: #f85149; color: #f85149; }
+
+/* ── Incubateur modal ── */
+.incubator-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+}
+
+.incubator-modal {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 20px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: monospace;
+}
+
+.inc-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #58a6ff;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.inc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inc-desc {
+  font-size: 11px;
+  color: #8b949e;
+  margin: 0;
+}
+
+.inc-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.inc-label { color: #8b949e; }
+.inc-val   { color: #e6edf3; font-weight: bold; }
+
+.inc-note {
+  font-size: 10px;
+  color: #d29922;
+  margin: 4px 0 0;
+}
+
+.inc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.inc-btn {
+  flex: 1;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.inc-accept {
+  background: #0f2d0f;
+  border-color: #3fb950;
+  color: #3fb950;
+}
+.inc-accept:hover { background: #1a4d1a; }
+
+.inc-decline {
+  background: #1a0909;
+  border-color: #3d1010;
+  color: #f85149;
+}
+.inc-decline:hover { background: #2d0a0a; }
 </style>

@@ -2,7 +2,7 @@
 
 
 const SAVE_KEY     = 'datacenter_save'
-const SAVE_VERSION = 6  // bump when save format changes incompatibly
+const SAVE_VERSION = 7  // bump when save format changes incompatibly
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
@@ -104,6 +104,8 @@ function applyState(gameState, saved) {
   if (Array.isArray(saved.tickets))         gameState.tickets         = saved.tickets
   if (Array.isArray(saved.missions))        gameState.missions        = saved.missions
   if (Array.isArray(saved.notifications))   gameState.notifications   = saved.notifications
+  if (saved.pendingIncubatorOffer !== undefined) gameState.pendingIncubatorOffer = saved.pendingIncubatorOffer
+  if (Array.isArray(saved.incubatorContracts))   gameState.incubatorContracts   = saved.incubatorContracts
 
   // Floors: restore full grid structure
   if (Array.isArray(saved.floors)) {

@@ -8,6 +8,7 @@ const SERVICES = {
     basePrice:   8,
     color:       '#58a6ff',
     serverTypes: ['BASIC', 'BALANCED', 'PERFORMANCE'],
+    bandwidthPerClient: 20,
   },
   DEDICATED: {
     label:       'Dédié',
@@ -18,6 +19,7 @@ const SERVICES = {
     basePrice:   45,
     color:       '#3fb950',
     serverTypes: ['BALANCED', 'PERFORMANCE'],
+    bandwidthPerClient: 50,
   },
   STORAGE: {
     label:       'Stockage',
@@ -28,6 +30,7 @@ const SERVICES = {
     basePrice:   15,
     color:       '#d29922',
     serverTypes: ["STORAGE_DENSE"],
+    bandwidthPerClient: 10,
   },
   GAMING: {
     label:       'Gaming',
@@ -38,6 +41,7 @@ const SERVICES = {
     basePrice:   30,
     color:       '#f78166',
     serverTypes: ['PERFORMANCE', 'GPU'],
+    bandwidthPerClient: 200,
   },
   STREAMING: {
     label:       'Streaming',
@@ -48,6 +52,7 @@ const SERVICES = {
     basePrice:   22,
     color:       '#ff7b54',
     serverTypes: ['PERFORMANCE', 'STORAGE_DENSE'],
+    bandwidthPerClient: 150,
   },
   AI_CLOUD: {
     label:       'IA Cloud',
@@ -59,6 +64,7 @@ const SERVICES = {
     color:       '#c084fc',
     serverTypes: ['GPU'],
     unlockRep:   40,  // only visible once player has decent reputation
+    bandwidthPerClient: 100,
   },
   ENTERPRISE: {
     label:       'Entreprise',
@@ -72,6 +78,7 @@ const SERVICES = {
     minServers:  2,
     maxServers:  4,
     hidden:      true,  // not shown in ServicesPanel; generated independently
+    bandwidthPerClient: 80,
   },
 }
 

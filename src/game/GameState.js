@@ -114,7 +114,7 @@ function createFloor(id, unlockedRows = 3, unlockedCols = 3) {
     }
     grid.push(row)
   }
-  return { id, name: id === 0 ? 'RDC' : `Étage ${id}`, grid }
+  return { id, name: id === 0 ? 'RDC' : `Étage ${id}`, grid, switchBandwidth: 1, bandwidthUsed: 0, bandwidthSaturated: false }
 }
 
 function createGameState() {
@@ -174,6 +174,8 @@ function createGameState() {
     greenEnergy:        false,  // set true by GREEN_ENERGY skill
     hasInsurance:       false,  // set true by INSURANCE skill
     hasDisasterRecovery: false, // set true by DISASTER_RECOVERY skill
+    pendingIncubatorOffer: null,
+    incubatorContracts:    [],
     // ── Milestones ────────────────────────────────────────────────────────────
     // Unlocked milestone IDs recorded here for the UI to display achievements
     milestones:         [],
