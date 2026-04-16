@@ -217,6 +217,117 @@ const EVENT_DEFS = [
       state.reputation = Math.min(100, state.reputation + 5)
     },
   },
+  {
+    id:          'RACK_FIRE',
+    name:        '🔥 Incendie de Rack',
+    description: 'Un court-circuit a déclenché un incendie localisé. 1 à 3 serveurs détruits.',
+    duration:    { min: 1, max: 1 },
+    probability: 0.0015,
+    severity:    'critical',
+    condition:   (state) => {
+      const hasServers = state.floors?.some(f => f.grid?.some(row => row.some(c => c.rack?.servers?.some(s => s))))
+      return hasServers && state.day >= 10
+    },
+    effects:     {},
+    onTrigger:   (state) => {
+      // 50% protection if SECURITY skill active
+      const protected_ = (state.unlockedSkills ?? []).includes('SECURITY_LVL2')
+      if (protected_ && Math.random() < 0.5) {
+        state.reputation = Math.min(100, (state.reputation ?? 0) + 2)
+        return
+      }
+      // Fail 1-3 servers in random cells
+      const allServers = []
+      for (const floor of state.floors ?? []) {
+        for (const row of floor.grid ?? []) {
+          for (const cell of row) {
+            if (!cell.rack) continue
+            for (let i = 0; i < cell.rack.servers.length; i++) {
+              if (cell.rack.servers[i] && cell.rack.servers[i].status === 'ok')
+                allServers.push({ cell, slot: i })
+            }
+          }
+        }
+      }
+      // Shuffle and pick 1-3
+      allServers.sort(() => Math.random() - 0.5)
+      const count = 1 + Math.floor(Math.random() * Math.min(3, allServers.length))
+      for (let i = 0; i < count; i++) {
+        const { cell, slot } = allServers[i]
+        const srv = cell.rack.servers[slot]
+        srv.status = 'failed'
+        srv.failedDays = 0
+        srv.health = Math.max(0, srv.health - 60)
+      }
+      const fine = 500 + Math.floor(Math.random() * 1000)
+      state.money -= fine
+      state.totalLost = (state.totalLost ?? 0) + fine
+      state.reputation = Math.max(0, (state.reputation ?? 0) - 12)
+    },
+  },
+  {
+    id:          'POWER_SURGE',
+    name:        '⚡ Surtension Électrique',
+    description: 'Une surtension a endommagé plusieurs serveurs. Santé −30 sur les serveurs touchés.',
+    duration:    { min: 1, max: 1 },
+    probability: 0.002,
+    severity:    'critical',
+    condition:   (state) => state.power > (state.powerCap ?? 3000) * 0.7 && state.day >= 5,
+    effects:     {},
+    onTrigger:   (state) => {
+      const protected_ = (state.unlockedSkills ?? []).includes('SECURITY_LVL1')
+      if (protected_ && Math.random() < 0.5) return
+      let hit = 0
+      for (const floor of state.floors ?? []) {
+        for (const row of floor.grid ?? []) {
+          for (const cell of row) {
+            if (!cell.rack) continue
+            for (const srv of cell.rack.servers) {
+              if (srv && Math.random() < 0.4) {
+                srv.health = Math.max(10, srv.health - 30)
+                if (srv.health < 20) { srv.status = 'failed'; srv.failedDays = 0 }
+                hit++
+              }
+            }
+          }
+        }
+      }
+      if (hit > 0) {
+        const cost = hit * 200
+        state.money -= cost
+        state.totalLost = (state.totalLost ?? 0) + cost
+      }
+    },
+  },
+  {
+    id:          'WATER_LEAK',
+    name:        '💧 Fuite d\'Eau',
+    description: 'Une canalisation a cédé. Les serveurs d\'une zone sont menacés.',
+    duration:    { min: 3, max: 7 },
+    probability: 0.0018,
+    severity:    'warning',
+    condition:   (state) => state.day >= 20,
+    effects:     { heatBonus: -5 }, // ironic: water cools but damages
+    onTrigger:   (state) => {
+      const protected_ = (state.unlockedSkills ?? []).includes('DISASTER_RECOVERY')
+      if (protected_ && Math.random() < 0.5) return
+      // Pick 1 random floor, affect up to 4 random cells
+      const floors = (state.floors ?? []).filter(f => f.grid?.some(row => row.some(c => c.rack)))
+      if (floors.length === 0) return
+      const floor = floors[Math.floor(Math.random() * floors.length)]
+      const cells = floor.grid.flat().filter(c => c.rack)
+      cells.sort(() => Math.random() - 0.5)
+      const affected = cells.slice(0, Math.min(4, cells.length))
+      for (const cell of affected) {
+        for (const srv of cell.rack.servers) {
+          if (srv && Math.random() < 0.5) {
+            srv.health = Math.max(20, srv.health - 20)
+          }
+        }
+      }
+      state.reputation = Math.max(0, (state.reputation ?? 0) - 5)
+    },
+  },
 ]
 
 // ─── Trigger logic ────────────────────────────────────────────────────────────

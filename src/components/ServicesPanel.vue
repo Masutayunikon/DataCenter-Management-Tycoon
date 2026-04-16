@@ -24,7 +24,7 @@
       <div class="svc-desc">{{ svc.description }}</div>
       <div class="svc-compat">{{ svc.serverTypes.join(', ') }}</div>
       <div class="svc-caps">
-        CPU ≤{{ svc.cpuMax }} &nbsp;·&nbsp; RAM ≤{{ svc.ramMax }}G &nbsp;·&nbsp; Disk ≤{{ svc.diskMax }}G
+        CPU ≤{{ hardwareLimits(key).cpuMax }} &nbsp;·&nbsp; RAM ≤{{ hardwareLimits(key).ramMax }}G &nbsp;·&nbsp; Disk ≤{{ hardwareLimits(key).diskMax }}G
       </div>
 
       <!-- Slot count controls — grayed in templates mode -->
@@ -127,15 +127,15 @@
           </div>
           <div class="tpl-form-row">
             <label class="tpl-lbl">CPU</label>
-            <input v-model.number="form.cpu"   class="tpl-input num" type="number" :min="svc.cpuMin"  :max="svc.cpuMax"  />
+            <input v-model.number="form.cpu"   class="tpl-input num" type="number" :min="svc.cpuMin"  :max="hardwareLimits(key).cpuMax"  />
           </div>
           <div class="tpl-form-row">
             <label class="tpl-lbl">RAM GB</label>
-            <input v-model.number="form.ram"   class="tpl-input num" type="number" :min="svc.ramMin"  :max="svc.ramMax"  />
+            <input v-model.number="form.ram"   class="tpl-input num" type="number" :min="svc.ramMin"  :max="hardwareLimits(key).ramMax"  />
           </div>
           <div class="tpl-form-row">
             <label class="tpl-lbl">Disk GB</label>
-            <input v-model.number="form.disk"  class="tpl-input num" type="number" :min="svc.diskMin" :max="svc.diskMax" />
+            <input v-model.number="form.disk"  class="tpl-input num" type="number" :min="svc.diskMin" :max="hardwareLimits(key).diskMax" />
           </div>
           <div class="tpl-form-row">
             <label class="tpl-lbl">Prix $/j</label>
@@ -160,7 +160,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
-import { SERVICES } from '../game/GameState.js'
+import { SERVICES, SERVER_TYPES } from '../game/GameState.js'
 import { applyPriceChange } from '../game/SimulationEngine.js'
 
 const props = defineProps({
@@ -172,6 +172,35 @@ const props = defineProps({
 const visibleServices = computed(() =>
   Object.fromEntries(Object.entries(SERVICES).filter(([, svc]) => !svc.hidden))
 )
+
+function hardwareLimits(serviceId) {
+  const svc = SERVICES[serviceId]
+  if (!svc) return { cpuMax: 0, ramMax: 0, diskMax: 0 }
+  const compatTypes = svc.serverTypes ?? []
+  let maxCpu = 0, maxRam = 0, maxDisk = 0
+  for (const floor of props.gameState.floors ?? []) {
+    for (const row of floor.grid ?? []) {
+      for (const cell of row ?? []) {
+        const servers = cell.rack?.servers ?? []
+        for (const server of servers) {
+          if (!server) continue
+          const typeDef = SERVER_TYPES[server.type]
+          if (!typeDef) continue
+          const typeName = typeDef.name ?? server.type
+          if (!compatTypes.includes(typeName)) continue
+          if ((server.cpu  ?? 0) > maxCpu)  maxCpu  = server.cpu  ?? 0
+          if ((server.ram  ?? 0) > maxRam)  maxRam  = server.ram  ?? 0
+          if ((server.disk ?? 0) > maxDisk) maxDisk = server.disk ?? 0
+        }
+      }
+    }
+  }
+  return {
+    cpuMax:  maxCpu  || svc.cpuMax,
+    ramMax:  maxRam  || svc.ramMax,
+    diskMax: maxDisk || svc.diskMax,
+  }
+}
 
 function slots(serviceId) {
   return props.gameState.serviceSlots?.[serviceId] ?? 0
@@ -383,9 +412,10 @@ function saveTemplate(key, svc) {
   if (!props.gameState.serviceTemplates[key]) props.gameState.serviceTemplates[key] = []
   if (props.gameState.nextTemplateId === undefined) props.gameState.nextTemplateId = 1
 
-  const cpu   = Math.max(svc.cpuMin,  Math.min(svc.cpuMax,  Math.round(form.cpu)))
-  const ram   = Math.max(svc.ramMin,  Math.min(svc.ramMax,  Math.round(form.ram)))
-  const disk  = Math.max(svc.diskMin, Math.min(svc.diskMax, Math.round(form.disk)))
+  const limits = hardwareLimits(key)
+  const cpu   = Math.max(svc.cpuMin,  Math.min(limits.cpuMax,  Math.round(form.cpu)))
+  const ram   = Math.max(svc.ramMin,  Math.min(limits.ramMax,  Math.round(form.ram)))
+  const disk  = Math.max(svc.diskMin, Math.min(limits.diskMax, Math.round(form.disk)))
   const price = Math.max(1, Math.round(form.price))
   const slots = Math.max(1, Math.round(form.slotsCount))
 

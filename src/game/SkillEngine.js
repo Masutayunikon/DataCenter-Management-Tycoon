@@ -22,24 +22,6 @@ function applySkill(state, skillId) {
   if (!state.unlockedSkills) state.unlockedSkills = []
   state.unlockedSkills.push(skillId)
 
-  // Service upgrade — update SERVICES templates
-  if (skill.serviceUpgrade) {
-    const upg = skill.serviceUpgrade;
-    const targetService = SERVICES[upg.type];
-
-    if (targetService) {
-      // Mise à jour des limites max pour les futurs contrats
-      if (upg.cpuMax)  targetService.cpuMax  = upg.cpuMax;
-      if (upg.ramMax)  targetService.ramMax  = upg.ramMax;
-      if (upg.diskMax) targetService.diskMax = upg.diskMax;
-
-      // Optionnel : On peut aussi augmenter le basePrice car le service devient "Premium"
-      targetService.basePrice = Math.round(targetService.basePrice * 1.15);
-
-      console.log(`Service ${upg.type} amélioré !`);
-    }
-  }
-
   // State effects — modify state fields at purchase time
   if (skill.stateEffect) {
     const fx = skill.stateEffect
