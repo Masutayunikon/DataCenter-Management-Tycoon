@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.4](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.3...datacenter-site-v2.3.4) (2026-04-16)
+
+
+### Bug Fixes
+
+* sync server with game logic changes (aabdec4461ff1b1386043706e92e171de90f4d8b) ([6fbd1d2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6fbd1d2320d0fb81177d6ba49076ebf08b1d9743))
+* trigger dual release (pool fix + sync) ([aabdec4](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/aabdec4461ff1b1386043706e92e171de90f4d8b))
+
 ## [2.3.3](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.2...datacenter-site-v2.3.3) (2026-04-16)
 
 
