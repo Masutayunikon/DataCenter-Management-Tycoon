@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.0...datacenter-site-v2.3.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* block unassignable client generation + persist audio settings in save ([e73bd40](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e73bd40da339fdc7aa80ef4f611954c65387a4b5))
+
 ## [2.3.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.2.0...datacenter-site-v2.3.0) (2026-04-12)
 
 
