@@ -1,0 +1,32 @@
+name: Sync Game Logic Ref
+
+# When src/game/ changes, bump server/.game-logic-ref so release-please
+# picks up a server version bump too (server/ imports from src/game/).
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/game/**'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          fetch-depth: 0
+
+      - name: Update server/.game-logic-ref
+        run: |
+          echo "${{ github.sha }}" > server/.game-logic-ref
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add server/.game-logic-ref
+          git commit -m "fix: sync server with game logic changes (${{ github.sha }})" || echo "Nothing to commit"
+          git push
