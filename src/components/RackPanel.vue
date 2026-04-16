@@ -47,6 +47,7 @@
               {{ server.cpuLoad }}/{{ server.cpuCapacity }}
             </span>
           </div>
+          <span class="age-badge" :style="{ color: serverAgeBadgeColor(server) }">{{ serverAgeDot(server) }} {{ server.age ?? 0 }}j</span>
 
           <!-- Restart row (free, probabilistic) -->
           <div v-if="server.status === 'failed' || server.status === 'warning'" class="restart-row">
@@ -101,6 +102,9 @@
               🗑
             </button>
           </div>
+          <button class="sell-btn" @click.stop="onSellServer(i)" :title="`Vendre ~$${estimateSellPrice(server)}`">
+            Vendre ${{ estimateSellPrice(server) }}
+          </button>
 
           <!-- Resource bars -->
           <div class="res-bars">
@@ -212,7 +216,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { SERVER_TYPES, SERVICES } from '../game/GameState.js'
-import { getCompatibleServers, moveAllClients, removeServer } from '../game/SimulationEngine.js'
+import { getCompatibleServers, moveAllClients, removeServer, sellServer } from '../game/SimulationEngine.js'
 
 const props = defineProps({
   cell:      { type: Object, required: true },
@@ -361,6 +365,32 @@ function onMoveAll(slot) {
 
 function onRemove(slot) {
   removeServer(props.gameState, props.cell.floorId, props.cell.x, props.cell.y, slot)
+}
+
+function serverAgeBadgeColor(server) {
+  const age = server.age ?? 0
+  if (age >= 300) return '#f85149'
+  if (age >= 100) return '#d29922'
+  return '#3fb950'
+}
+
+function serverAgeDot(server) {
+  const age = server.age ?? 0
+  if (age >= 300) return '●'
+  if (age >= 100) return '●'
+  return '●'
+}
+
+function estimateSellPrice(server) {
+  const baseDef  = SERVER_TYPES[server.type]
+  const baseCost = baseDef?.cost ?? 500
+  const age      = server.age ?? 0
+  const ageFactor = age < 100 ? 0.5 : age < 300 ? 0.4 : 0.3
+  return Math.round(baseCost * ageFactor)
+}
+
+function onSellServer(slot) {
+  sellServer(props.gameState, props.cell.floorId, props.cell.x, props.cell.y, slot)
 }
 
 function onRepair(slot) {
@@ -576,6 +606,27 @@ function onInstall() {
   border-radius: 2px;
 }
 .remove-btn:hover { background: #2d0a0a; border-color: #f85149; }
+
+.age-badge {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: bold;
+  margin-top: 1px;
+}
+
+.sell-btn {
+  font-family: monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid #d29922;
+  background: #1a1400;
+  color: #d29922;
+  width: 100%;
+  margin-top: 2px;
+}
+.sell-btn:hover { background: #2d2200; }
 
 .health-val { font-family: monospace; font-size: 9px; font-weight: bold; }
 .health-val.good { color: #3fb950; }

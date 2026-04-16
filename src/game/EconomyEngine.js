@@ -21,7 +21,9 @@ function calculateRevenue(state) {
     } else if (client.fixedPrice != null) {
       total += client.fixedPrice
     } else {
-      total += state.servicePrices[client.serviceId] ?? 0
+      const baseP = state.servicePrices[client.serviceId] ?? 0
+      const slaM  = client.slaLevel === 'GOLD' ? 1.75 : client.slaLevel === 'SILVER' ? 1.25 : 1.0
+      total += Math.round(baseP * slaM)
     }
   }
   // BULK_DEAL skill: enterprise clients pay +15%

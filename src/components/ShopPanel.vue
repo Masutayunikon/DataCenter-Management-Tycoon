@@ -150,6 +150,41 @@
       </template>
     </div>
 
+    <!-- Banque -->
+    <div class="section-label" style="margin-top: 8px;">BANQUE</div>
+    <div class="bank-info">
+      <span class="bank-debt-label">Dette totale</span>
+      <span class="bank-debt-val" :style="{ color: getTotalDebt(gameState) > 0 ? '#f85149' : '#3fb950' }">
+        ${{ getTotalDebt(gameState).toLocaleString() }}
+      </span>
+    </div>
+    <div
+      v-for="(tier, idx) in LOAN_TIERS"
+      :key="idx"
+      class="loan-row"
+      :class="{ 'loan-active': hasActiveLoan(idx) }"
+    >
+      <div class="loan-info">
+        <span class="loan-amount">${{ tier.amount.toLocaleString() }}</span>
+        <span class="loan-rate">{{ (tier.rate * 100).toFixed(2) }}%/j</span>
+        <span v-if="hasActiveLoan(idx)" class="loan-remaining">reste ${{ activeLoanRemaining(idx).toLocaleString() }}</span>
+      </div>
+      <div style="display:flex; gap:4px;">
+        <button
+          v-if="!hasActiveLoan(idx)"
+          class="loan-btn take-btn"
+          :disabled="gameState.loans?.some(l => !l.paid)"
+          @click="onTakeLoan(idx)"
+        >Emprunter</button>
+        <button
+          v-else
+          class="loan-btn repay-btn"
+          :disabled="gameState.money <= 0"
+          @click="onRepayLoan(idx)"
+        >Rembourser</button>
+      </div>
+    </div>
+
     <!-- Réseau -->
     <div class="section-label" style="margin-top: 8px;">RÉSEAU</div>
     <div
@@ -185,7 +220,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RACK_COST, FLOOR_COST_BASE } from '../game/GameState.js'
-import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY, upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT } from '../game/SimulationEngine.js'
+import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY, upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT, takeLoan, repayLoan, getTotalDebt, LOAN_TIERS } from '../game/SimulationEngine.js'
 import { EMPLOYEE_SUPPORT_DAILY, EMPLOYEE_SECURITY_DAILY } from '../game/EconomyEngine.js'
 
 const EMPLOYEE_HIRE_COST = 3000
@@ -245,6 +280,24 @@ function fireEmployee(type) {
 
 function onUpgradeSwitch(floorId) {
   upgradeSwitch(props.gameState, floorId)
+}
+
+function hasActiveLoan(tierIdx) {
+  return props.gameState.loans?.some(l => !l.paid && l.tierIndex === tierIdx) ?? false
+}
+
+function activeLoanRemaining(tierIdx) {
+  const loan = props.gameState.loans?.find(l => !l.paid && l.tierIndex === tierIdx)
+  return loan ? Math.round(loan.remaining) : 0
+}
+
+function onTakeLoan(tierIdx) {
+  takeLoan(props.gameState, tierIdx)
+}
+
+function onRepayLoan(tierIdx) {
+  const loan = props.gameState.loans?.find(l => !l.paid && l.tierIndex === tierIdx)
+  if (loan) repayLoan(props.gameState, loan.id)
 }
 </script>
 
@@ -444,4 +497,54 @@ function onUpgradeSwitch(floorId) {
   font-size: 9px;
   color: #8b949e;
 }
+
+/* ── Banque ── */
+.bank-info {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 10px;
+  padding: 4px 6px;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 4px;
+}
+.bank-debt-label { color: #8b949e; }
+.bank-debt-val   { font-weight: bold; }
+
+.loan-row {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.loan-row.loan-active { border-color: #d29922; }
+
+.loan-info {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.loan-amount    { font-family: monospace; font-size: 11px; font-weight: bold; color: #e6edf3; }
+.loan-rate      { font-family: monospace; font-size: 9px; color: #8b949e; }
+.loan-remaining { font-family: monospace; font-size: 9px; color: #d29922; }
+
+.loan-btn {
+  font-family: monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.take-btn  { background: #0f2d0f; border-color: #3fb950; color: #3fb950; }
+.take-btn:hover:not(:disabled)  { background: #1a4d1a; }
+.repay-btn { background: #2d0a0a; border-color: #f85149; color: #f85149; }
+.repay-btn:hover:not(:disabled) { background: #3d1010; }
+.loan-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 </style>

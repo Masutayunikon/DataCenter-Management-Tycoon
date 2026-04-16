@@ -9,6 +9,7 @@ const SERVICES = {
     color:       '#58a6ff',
     serverTypes: ['BASIC', 'BALANCED', 'PERFORMANCE'],
     bandwidthPerClient: 20,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   DEDICATED: {
     label:       'Dédié',
@@ -20,6 +21,7 @@ const SERVICES = {
     color:       '#3fb950',
     serverTypes: ['BALANCED', 'PERFORMANCE'],
     bandwidthPerClient: 50,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   STORAGE: {
     label:       'Stockage',
@@ -31,6 +33,7 @@ const SERVICES = {
     color:       '#d29922',
     serverTypes: ["STORAGE_DENSE"],
     bandwidthPerClient: 10,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   GAMING: {
     label:       'Gaming',
@@ -42,6 +45,7 @@ const SERVICES = {
     color:       '#f78166',
     serverTypes: ['PERFORMANCE', 'GPU'],
     bandwidthPerClient: 200,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   STREAMING: {
     label:       'Streaming',
@@ -53,6 +57,7 @@ const SERVICES = {
     color:       '#ff7b54',
     serverTypes: ['PERFORMANCE', 'STORAGE_DENSE'],
     bandwidthPerClient: 150,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   AI_CLOUD: {
     label:       'IA Cloud',
@@ -65,6 +70,7 @@ const SERVICES = {
     serverTypes: ['GPU'],
     unlockRep:   40,  // only visible once player has decent reputation
     bandwidthPerClient: 100,
+    slaLevels: ['BRONZE', 'SILVER', 'GOLD'],
   },
   ENTERPRISE: {
     label:       'Entreprise',

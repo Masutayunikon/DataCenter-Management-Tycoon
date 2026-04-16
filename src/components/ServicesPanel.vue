@@ -79,6 +79,20 @@
         </div>
       </template>
 
+      <!-- ── SLA selector ── -->
+      <div class="sla-row">
+        <span class="sla-label">SLA</span>
+        <div class="sla-btns">
+          <button v-for="lvl in ['BRONZE','SILVER','GOLD']" :key="lvl" class="sla-btn"
+            :class="{ active: (gameState.serviceSLA?.[key] ?? 'BRONZE') === lvl }"
+            :style="{ '--sla-color': slaColor(lvl) }"
+            @click="setServiceSLA(gameState, key, lvl)">{{ lvl[0] }}</button>
+        </div>
+        <span class="sla-price-hint" :style="{ color: slaColor(gameState.serviceSLA?.[key] ?? 'BRONZE') }">
+          ×{{ slaMultiplier(gameState.serviceSLA?.[key] ?? 'BRONZE') }}
+        </span>
+      </div>
+
       <!-- ── Mode toggle ── -->
       <div class="mode-row">
         <span class="mode-label">Mode arrivée :</span>
@@ -161,7 +175,7 @@
 <script setup>
 import { computed, ref, reactive } from 'vue'
 import { SERVICES, SERVER_TYPES } from '../game/GameState.js'
-import { applyPriceChange } from '../game/SimulationEngine.js'
+import { applyPriceChange, setServiceSLA } from '../game/SimulationEngine.js'
 
 const props = defineProps({
   gameState:  { type: Object,   required: true },
@@ -453,6 +467,18 @@ function saveTemplate(key, svc) {
   if (props.sendAction) props.sendAction('set_service_templates', {
     serviceId: key, templates: props.gameState.serviceTemplates[key] ?? [],
   })
+}
+
+function slaColor(lvl) {
+  if (lvl === 'GOLD')   return '#d29922'
+  if (lvl === 'SILVER') return '#8b949e'
+  return '#58a6ff'
+}
+
+function slaMultiplier(lvl) {
+  if (lvl === 'GOLD')   return '1.75'
+  if (lvl === 'SILVER') return '1.25'
+  return '1.00'
 }
 </script>
 
@@ -903,4 +929,48 @@ function saveTemplate(key, svc) {
   transition: all 0.1s;
 }
 .tpl-add-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+
+/* ── SLA ── */
+.sla-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.sla-label {
+  font-family: monospace;
+  font-size: 9px;
+  color: #8b949e;
+  letter-spacing: 1px;
+  min-width: 22px;
+}
+.sla-btns {
+  display: flex;
+  gap: 3px;
+}
+.sla-btn {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border: 1px solid #30363d;
+  border-radius: 3px;
+  background: #0d1117;
+  color: #8b949e;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.sla-btn.active {
+  border-color: var(--sla-color);
+  color: var(--sla-color);
+  background: #161b22;
+}
+.sla-btn:hover:not(.active) { background: #21262d; }
+
+.sla-price-hint {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: bold;
+  margin-left: auto;
+}
 </style>

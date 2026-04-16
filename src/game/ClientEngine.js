@@ -1,6 +1,7 @@
 // ClientEngine.js — client generation, assignment, satisfaction, departures
 
 import { createClient, SERVICES, COLUMNS } from './GameState.js'
+import { rollClientSLA } from './SLAEngine.js'
 import { clamp, allGridCells, getServerAt, getClientServer, getTotalServerCapacity, serverFits, findBestServer, getServerLoad } from './SimUtils.js'
 import { addTicketRaw, hasRecentTicket, addNotification } from './TicketEngine.js'
 import { getEventMultiplier, getEventBonus } from './EventSystem.js'
@@ -77,6 +78,9 @@ function generateClients(state) {
         client.fixedPrice   = tpl.fixedPrice
         client.templateName = tpl.name
         client.templateId   = tpl.id
+        client.slaLevel = rollClientSLA(state.serviceSLA?.[serviceId] ?? 'BRONZE')
+        if (client.slaLevel === 'SILVER') client.durationExpected = Math.round(client.durationExpected * 1.3)
+        if (client.slaLevel === 'GOLD')   client.durationExpected = Math.round(client.durationExpected * 1.8)
         // Ne pas scaler les demandes des templates — valeurs définies explicitement
         state.clientQueue.push(client)
         usage[tpl.id] = (usage[tpl.id] ?? 0) + 1
@@ -122,6 +126,9 @@ function generateClients(state) {
     for (let i = 0; i < count; i++) {
       const client = createClient(state.nextClientId++, state.day, serviceId)
       applyDemandScale(client, scale)
+      client.slaLevel = rollClientSLA(state.serviceSLA?.[serviceId] ?? 'BRONZE')
+      if (client.slaLevel === 'SILVER') client.durationExpected = Math.round(client.durationExpected * 1.3)
+      if (client.slaLevel === 'GOLD')   client.durationExpected = Math.round(client.durationExpected * 1.8)
       state.clientQueue.push(client)
       clientAdded = true
     }

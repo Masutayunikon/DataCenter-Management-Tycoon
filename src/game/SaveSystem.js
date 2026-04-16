@@ -106,6 +106,8 @@ function applyState(gameState, saved) {
   if (Array.isArray(saved.notifications))   gameState.notifications   = saved.notifications
   if (saved.pendingIncubatorOffer !== undefined) gameState.pendingIncubatorOffer = saved.pendingIncubatorOffer
   if (Array.isArray(saved.incubatorContracts))   gameState.incubatorContracts   = saved.incubatorContracts
+  if (Array.isArray(saved.loans))                gameState.loans                = saved.loans
+  if (saved.serviceSLA) Object.assign(gameState.serviceSLA ?? {}, saved.serviceSLA)
 
   // Floors: restore full grid structure
   if (Array.isArray(saved.floors)) {

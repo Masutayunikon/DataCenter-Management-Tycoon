@@ -4,9 +4,11 @@ import { tryTriggerEvent, tickEvents } from './EventSystem.js'
 import { computeNetworkUsage, upgradeSwitch } from './NetworkEngine.js'
 import { processIncubatorOffer, acceptIncubatorOffer, declineIncubatorOffer } from './IncubatorEngine.js'
 import { generateClients, generateEnterpriseClients, assignQueuedClients, updateSatisfaction, processDepartures, updateReputation } from './ClientEngine.js'
-import { updateServerLoads, processServerFailures, computeHeat, computePower, updateServerUptime, processHacks } from './ServerEngine.js'
+import { updateServerLoads, processServerFailures, computeHeat, computePower, updateServerUptime, processHacks, updateServerAge } from './ServerEngine.js'
 import { calculateRevenue, calculateElectricityCost, calculateMaintenanceCost, calculateEmployeeCost, generateTickets, autoResolveTickets } from './EconomyEngine.js'
 import { generateMissions, processMissionDeadlines } from './MissionEngine.js'
+import { processLoans } from './LoanEngine.js'
+import { processSLACompliance } from './SLAEngine.js'
 import { MILESTONES } from './GameState.js'
 import { allGridCells } from './SimUtils.js'
 import { clamp } from './SimUtils.js'
@@ -84,7 +86,9 @@ function processDayTick(state) {
   calculateElectricityCost(state)
   calculateMaintenanceCost(state)
   calculateEmployeeCost(state)
+  processLoans(state)
   updateSatisfaction(state)
+  processSLACompliance(state)
   applyAutoScalingBonus(state)
   processDepartures(state)
   generateTickets(state)
@@ -94,6 +98,7 @@ function processDayTick(state) {
   processMissionDeadlines(state)
   updateReputation(state)
   updateServerUptime(state)
+  updateServerAge(state)
   updateUptimeStreak(state)
   checkMilestones(state)
 
@@ -106,7 +111,9 @@ export { DAY_DURATION_MS, processDayTick }
 
 export { getArrivalRate, generateEnterpriseClients, assignClientToServer, getServersForQueueClient, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY } from './ClientEngine.js'
 export { resolveMission } from './MissionEngine.js'
-export { repairServer, restartServer, moveClient, moveAllClients, removeServer, processHacks, getHackProtection, BASE_HACK_CHANCE, AUTO_REPAIR_DAYS, AUTO_REPAIR_COST } from './ServerEngine.js'
+export { repairServer, restartServer, moveClient, moveAllClients, removeServer, processHacks, getHackProtection, BASE_HACK_CHANCE, AUTO_REPAIR_DAYS, AUTO_REPAIR_COST, sellServer } from './ServerEngine.js'
+export { takeLoan, repayLoan, getTotalDebt, LOAN_TIERS } from './LoanEngine.js'
+export { setServiceSLA, SLA_CONFIG } from './SLAEngine.js'
 export { applyPriceChange } from './EconomyEngine.js'
 export { unlockCell, buyFloor, getUnlockCost, isAdjacentToUnlocked } from './GridEngine.js'
 export { applySkill, isServerTypeUnlocked } from './SkillEngine.js'

@@ -30,6 +30,7 @@ function createServer(type = 'BASIC') {
     failedDays:       0,
     restartAttempts:  0,
     lifetimeRestarts: 0,  // never resets — degrades restart success chance
+    age:              0,
     uptime:           0,
     logs:            [],
     services:        [],
@@ -70,6 +71,8 @@ function createClient(id, day, serviceId = 'VPS') {
     satisfaction:     50,
     durationExpected: (isEnterprise ? 60 : 20) + Math.floor(Math.random() * (isEnterprise ? 121 : 71)),
     dayArrived:       day,
+    slaLevel:         'BRONZE',
+    slaUptimeDays:    0,
     daysInQueue:      0,
     daysUnhappy:      0,
     serverPos:        null,
@@ -163,6 +166,7 @@ function createGameState() {
     // Service templates — per-service tier lists
     serviceTemplates:   { VPS: [], DEDICATED: [], STORAGE: [], GAMING: [], STREAMING: [], AI_CLOUD: [] },
     serviceModes:       { VPS: 'auto', DEDICATED: 'auto', STORAGE: 'auto', GAMING: 'auto', STREAMING: 'auto', AI_CLOUD: 'auto' },
+    serviceSLA:         { VPS: 'BRONZE', DEDICATED: 'BRONZE', STORAGE: 'BRONZE', GAMING: 'BRONZE', STREAMING: 'BRONZE', AI_CLOUD: 'BRONZE' },
     // ── Progression & stats tracking ─────────────────────────────────────────
     totalEarned:        0,   // cumulative revenue across all days
     totalLost:          0,   // cumulative costs & fines across all days
@@ -176,6 +180,7 @@ function createGameState() {
     hasDisasterRecovery: false, // set true by DISASTER_RECOVERY skill
     pendingIncubatorOffer: null,
     incubatorContracts:    [],
+    loans:                 [],
     // ── Milestones ────────────────────────────────────────────────────────────
     // Unlocked milestone IDs recorded here for the UI to display achievements
     milestones:         [],

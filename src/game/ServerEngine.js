@@ -382,10 +382,66 @@ function processHacks(state) {
   }
 }
 
+// ─── Hardware aging ───────────────────────────────────────────────────────────
+
+function updateServerAge(state) {
+  for (const cell of allGridCells(state)) {
+    if (!cell.rack) continue
+    for (let slot = 0; slot < cell.rack.servers.length; slot++) {
+      const server = cell.rack.servers[slot]
+      if (!server) continue
+      server.age = (server.age ?? 0) + 1
+
+      // After 300 days: gradual reliability degradation
+      if (server.age > 300) {
+        const degradation = Math.min(0.005 * Math.floor((server.age - 300) / 30), 0.15)
+        const baseDef     = SERVER_TYPES[server.type]
+        const baseRel     = baseDef?.reliability ?? 0.98
+        server.reliability = Math.max(0.5, baseRel - degradation)
+      }
+
+      // After 600 days: mark for maintenance surcharge
+      server.maintenanceSurcharge = server.age > 600
+    }
+  }
+}
+
+// ─── Sell server ──────────────────────────────────────────────────────────────
+
+function sellServer(state, floorId, x, y, slot) {
+  const floor = getFloor(state, floorId)
+  if (!floor) return { success: false, message: 'Floor introuvable' }
+  const cell  = floor.grid?.[y]?.[x]
+  if (!cell?.rack) return { success: false, message: 'Pas de rack ici' }
+  const server = cell.rack.servers[slot]
+  if (!server) return { success: false, message: 'Slot vide' }
+
+  // Check no clients hosted on this server
+  const hasClients = state.clients.some(c => {
+    if (c.isEnterprise) return c.serverPositions?.some(p => p.floorId === floorId && p.x === x && p.y === y && p.slot === slot)
+    return c.serverPos && c.serverPos.floorId === floorId && c.serverPos.x === x && c.serverPos.y === y && c.serverPos.slot === slot
+  })
+  if (hasClients) return { success: false, message: 'Des clients utilisent ce serveur' }
+
+  const baseDef  = SERVER_TYPES[server.type]
+  const baseCost = baseDef?.cost ?? 500
+  const age      = server.age ?? 0
+  const ageFactor = age < 100 ? 0.5 : age < 300 ? 0.4 : 0.3
+  const sellPrice = Math.round(baseCost * ageFactor)
+
+  cell.rack.servers[slot] = null
+  state.money += sellPrice
+
+  const label = serverLabel(cell, slot)
+  addNotification(state, `💰 Serveur ${label} vendu pour $${sellPrice}`, 'info')
+  return { success: true, sellPrice }
+}
+
 export {
   updateServerLoads, processServerFailures, evictClientsFromServer,
   computeHeat, computePower, updateServerUptime,
   repairServer, restartServer, moveClient, moveAllClients, removeServer,
   processHacks, getHackProtection, BASE_HACK_CHANCE,
   AUTO_REPAIR_DAYS, AUTO_REPAIR_COST,
+  updateServerAge, sellServer,
 }

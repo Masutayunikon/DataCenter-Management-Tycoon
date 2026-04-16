@@ -125,6 +125,7 @@
           <span class="demand">RAM {{ client.ramDemand }}G</span>
           <span class="demand">DSK {{ client.diskDemand }}G</span>
           <span class="svc-tag" :style="{ color: svcColor(client.serviceId) }">{{ client.serviceId }}</span>
+          <span v-if="client.slaLevel && client.slaLevel !== 'BRONZE'" class="sla-badge" :style="{ color: client.slaLevel === 'GOLD' ? '#d29922' : '#8b949e' }">{{ client.slaLevel }}</span>
           <span class="tpl-tag" v-if="client.templateName">{{ client.templateName }}</span>
           <span class="server-tag" v-if="client.serverPos && !client.isEnterprise">
             F{{ client.serverPos.floorId }} {{ serverLabel(client.serverPos) }}
@@ -408,6 +409,7 @@ function clientProblems(client) {
 .demand     { color: #8b949e; }
 .svc-tag    { font-size: 8px; font-weight: bold; }
 .tpl-tag    { font-size: 8px; color: #3fb950; background: #0f2d0f; border: 1px solid #1f4a1f; border-radius: 8px; padding: 0 4px; white-space: nowrap; }
+.sla-badge  { font-family: monospace; font-size: 9px; font-weight: bold; padding: 0 3px; border-radius: 2px; background: #161b22; }
 .server-tag { color: #58a6ff; }
 .wait-days  { color: #d29922; }
 
