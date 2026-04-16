@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.3](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.2...datacenter-site-v2.3.3) (2026-04-16)
+
+
+### Bug Fixes
+
+* generate pool clients only for offered services, add TTL to stale clients ([72ffc8a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/72ffc8affd3f260881306ad59f811ac16cd9ecdf))
+
 ## [2.3.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.1...datacenter-site-v2.3.2) (2026-04-16)
 
 
