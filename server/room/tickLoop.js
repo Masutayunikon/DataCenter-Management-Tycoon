@@ -6,7 +6,7 @@ import { calculateRevenue, calculateElectricityCost, calculateMaintenanceCost, c
 import { updateSatisfaction, processDepartures, updateReputation, assignQueuedClients, MAX_QUEUE_DAYS } from '../../src/game/ClientEngine.js'
 import { generateMissions, processMissionDeadlines } from '../../src/game/MissionEngine.js'
 import { clamp } from '../../src/game/SimUtils.js'
-import { generatePoolClients, distributeClients, detectSpecialists, getMarketWeights, nextPoolId } from '../ClientPool.js'
+import { generatePoolClients, distributeClients, detectSpecialists, getMarketWeights, nextPoolId, pruneStaleClients } from '../ClientPool.js'
 import { snapshot, computeDeltas, allMeta } from './stateSync.js'
 import { processTenders } from './tenderSystem.js'
 import { randomClientName } from './clientNames.js'
@@ -211,7 +211,7 @@ export function executeTick(room) {
   const specialists = detectSpecialists(room.players)
 
   if (room.shared.day % 7 === 1) {
-    const newBatch = generatePoolClients(room.shared, room.players, room._pendingPool.length)
+    const newBatch = generatePoolClients(room.shared, room.players, room._pendingPool)
     room._pendingPool.push(...newBatch)
     room.shared.lastPoolCount = room._pendingPool.length
     console.log(`[Room ${room.id}] Week ${Math.ceil(room.shared.day / 7)}: ${newBatch.length} pool clients generated`)
@@ -228,12 +228,17 @@ export function executeTick(room) {
   const toDistribute = dailyQuota > 0 ? room._pendingPool.splice(0, dailyQuota) : []
   const assignments  = distributeClients(toDistribute, room.players, specialists)
 
-  // Return unassigned clients to the pool so they aren't silently dropped
   if (assignments.length < toDistribute.length) {
     const assignedPoolIds = new Set(assignments.map(a => a.client._poolId))
     const unassigned = toDistribute.filter(c => !assignedPoolIds.has(c._poolId))
-    room._pendingPool.push(...unassigned)
+    // Increment attempt counter; drop after 5 failed attempts
+    for (const c of unassigned) c._attempts = (c._attempts ?? 0) + 1
+    room._pendingPool.push(...unassigned.filter(c => c._attempts < 5))
   }
+
+  const pruned = pruneStaleClients(room._pendingPool)
+  if (pruned > 0)
+    console.log(`[Room ${room.id}] Day ${room.shared.day}: pruned ${pruned} stale pool clients`)
 
   if (toDistribute.length > 0)
     console.log(`[Room ${room.id}] Day ${room.shared.day}: distributing ${toDistribute.length} clients → ${assignments.length} assigned, ${room._pendingPool.length} pending`)

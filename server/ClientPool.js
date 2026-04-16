@@ -203,14 +203,13 @@ export function nextPoolId() { return _nextPoolClientId++ }
  * Generate a weekly batch of pool clients.
  * Counts free slots from BOTH auto-mode and templates-mode players so that
  * template datacenters also receive their share of market demand.
+ * Generates per service based on free slot counts, only for offered services.
  */
-export function generatePoolClients(shared, players, existingPoolSize = 0) {
-  const weights = shared.marketWeights ?? getMarketWeights(shared.year ?? 1)
+export function generatePoolClients(shared, players, existingPool = []) {
+  const activity = shared.marketActivity ?? 1.0
 
-  // Count total free slots across all connected players (auto + templates).
-  // We union serviceSlots keys and serviceTemplates keys so that templates-mode
-  // services are counted even if serviceSlots[svc] is 0 or absent.
-  let totalFreeSlots = 0
+  // Count free slots per service across all connected players (auto + templates).
+  const freeByService = {}
   for (const [, player] of players) {
     if (!player.connected || !player.state) continue
 
@@ -227,52 +226,62 @@ export function generatePoolClients(shared, players, existingPoolSize = 0) {
         if (maxSlots <= 0) continue
         const active = (player.state.clients    ?? []).filter(c => c.serviceId === svc).length
         const queued = (player.state.clientQueue ?? []).filter(c => c.serviceId === svc).length
-        totalFreeSlots += Math.max(0, maxSlots - active - queued)
+        freeByService[svc] = (freeByService[svc] ?? 0) + Math.max(0, maxSlots - active - queued)
       } else if (mode === 'templates') {
         // Sum free slots across all templates
         const templates = player.state.serviceTemplates?.[svc] ?? []
         const usage     = computeTemplateUsage(player.state, svc)
         for (const t of templates) {
-          totalFreeSlots += Math.max(0, t.slots - (usage[t.id] ?? 0))
+          freeByService[svc] = (freeByService[svc] ?? 0) + Math.max(0, t.slots - (usage[t.id] ?? 0))
         }
       }
     }
   }
-  if (totalFreeSlots <= 0) return []
 
-  // Weekly batch: fill gap between existing pool and free slots + ~15% margin
-  const activity = shared.marketActivity ?? 1.0
-  const target   = Math.ceil(totalFreeSlots * 1.15 * activity)
-  const count    = Math.max(0, target - existingPoolSize)
-  if (count <= 0) return []
+  // Only generate for services that have free slots (prevents unwanted service types)
+  const offeredServices = Object.keys(freeByService).filter(svc => freeByService[svc] > 0)
+  if (offeredServices.length === 0) return []
+
+  // Count existing pool clients per service
+  const existingByService = {}
+  for (const c of existingPool) {
+    existingByService[c.serviceId] = (existingByService[c.serviceId] ?? 0) + 1
+  }
 
   const clients = []
-  for (let i = 0; i < count; i++) {
-    const serviceId = weightedRandom(weights)
-    const def       = SERVICES[serviceId]
+  for (const svc of offeredServices) {
+    const def = SERVICES[svc]
     if (!def) continue
 
-    const cpu  = randInt(def.cpuMin  ?? 1,  def.cpuMax  ?? 4)
-    const ram  = randInt(def.ramMin  ?? 1,  def.ramMax  ?? 8)
-    const disk = randInt(def.diskMin ?? 10, def.diskMax ?? 50)
+    const free   = freeByService[svc]
+    const target = Math.ceil(free * 1.15 * activity)
+    const count  = Math.max(0, target - (existingByService[svc] ?? 0))
+    if (count <= 0) continue
 
-    const budgetBase = def.basePrice ?? 100
-    const budgetMult = 0.6 + Math.random() * 0.8 + (Math.random() > 0.8 ? Math.random() * 1.2 : 0)
-    const budget     = Math.round(budgetBase * budgetMult)
+    for (let i = 0; i < count; i++) {
+      const cpu  = randInt(def.cpuMin  ?? 1,  def.cpuMax  ?? 4)
+      const ram  = randInt(def.ramMin  ?? 1,  def.ramMax  ?? 8)
+      const disk = randInt(def.diskMin ?? 10, def.diskMax ?? 50)
 
-    const qualityPreference = clamp01(gaussRandom(0.4, 0.2))
+      const budgetBase = def.basePrice ?? 100
+      const budgetMult = 0.6 + Math.random() * 0.8 + (Math.random() > 0.8 ? Math.random() * 1.2 : 0)
+      const budget     = Math.round(budgetBase * budgetMult)
 
-    clients.push({
-      _poolId:              _nextPoolClientId++,
-      _assignedTemplateId:  null,   // filled by scorePlayer when mode = templates
-      serviceId,
-      cpuDemand:            cpu,
-      ramDemand:            ram,
-      diskDemand:           disk,
-      budget,
-      qualityPreference,
-      durationExpected:     randInt(30, 180),
-    })
+      const qualityPreference = clamp01(gaussRandom(0.4, 0.2))
+
+      clients.push({
+        _poolId:              _nextPoolClientId++,
+        _assignedTemplateId:  null,   // filled by scorePlayer when mode = templates
+        _attempts:            0,
+        serviceId:            svc,
+        cpuDemand:            cpu,
+        ramDemand:            ram,
+        diskDemand:           disk,
+        budget,
+        qualityPreference,
+        durationExpected:     randInt(30, 180),
+      })
+    }
   }
 
   return clients
@@ -338,6 +347,20 @@ export function distributeClients(poolClients, players, specialists) {
   }
 
   return assignments
+}
+
+// ─── Stale client pruning ─────────────────────────────────────────────────────
+
+/**
+ * Remove pool clients that have exceeded the max attempt count.
+ * Called after failed distributions to prevent permanent accumulation.
+ */
+export function pruneStaleClients(pool) {
+  const before = pool.length
+  const pruned = pool.filter(c => (c._attempts ?? 0) < 5)
+  pool.length = 0
+  pool.push(...pruned)
+  return before - pruned.length
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
