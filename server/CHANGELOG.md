@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v3.0.1...datacenter-game-server-v3.0.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* generate pool clients only for offered services, add TTL to stale clients ([72ffc8a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/72ffc8affd3f260881306ad59f811ac16cd9ecdf))
+* sync server with game logic changes (aabdec4461ff1b1386043706e92e171de90f4d8b) ([6fbd1d2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6fbd1d2320d0fb81177d6ba49076ebf08b1d9743))
+
 ## [3.0.1](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v3.0.0...datacenter-game-server-v3.0.1) (2026-04-16)
 
 
