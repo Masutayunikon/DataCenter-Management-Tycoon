@@ -97,9 +97,21 @@ function generateClients(state) {
     if (svcDef?.unlockRep && (state.reputation ?? 0) < svcDef.unlockRep) continue
 
     const activeCount = state.clients.filter(c => c.serviceId === serviceId).length
-    const queueCount  = state.clientQueue.filter(c => c.serviceId === serviceId).length
+    // Only count "fresh" queue entries (≤1 day) toward the slot cap — stuck clients
+    // that have been waiting >1 day without assignment don't block new arrivals
+    const queueCount  = state.clientQueue.filter(c => c.serviceId === serviceId && (c.daysInQueue ?? 0) <= 1).length
     const freeSlots   = maxSlots - activeCount - queueCount
     if (freeSlots <= 0) continue
+
+    // Don't generate if no server can actually accept even the smallest client
+    // of this service type — prevents unassignable clients from piling up
+    const probeClient = {
+      cpuDemand:  svcDef.cpuMin ?? 1,
+      ramDemand:  svcDef.ramMin ?? 1,
+      diskDemand: svcDef.diskMin ?? 1,
+      serviceId,
+    }
+    if (!findBestServer(state, probeClient.cpuDemand, serviceId, probeClient)) continue
 
     const rate = getArrivalRateForService(state, serviceId)
     if (rate <= 0) continue

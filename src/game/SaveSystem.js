@@ -1,6 +1,5 @@
 // SaveSystem.js — localStorage save/load for gameState
 
-import { SKILLS, SERVER_TYPES } from './GameState.js'
 
 const SAVE_KEY     = 'datacenter_save'
 const SAVE_VERSION = 5  // bump when save format changes incompatibly
@@ -95,6 +94,7 @@ function applyState(gameState, saved) {
   if (saved.employees)        Object.assign(gameState.employees,        saved.employees)
   if (saved.serviceModes)     Object.assign(gameState.serviceModes,     saved.serviceModes)
   if (saved.serviceTemplates) Object.assign(gameState.serviceTemplates, saved.serviceTemplates)
+  if (saved.settings)         Object.assign(gameState.settings,         saved.settings)
 
   if (Array.isArray(saved.unlockedSkills))  gameState.unlockedSkills  = saved.unlockedSkills
   if (Array.isArray(saved.activeEvents))    gameState.activeEvents    = saved.activeEvents
@@ -110,28 +110,6 @@ function applyState(gameState, saved) {
     gameState.floors = saved.floors
   }
 
-  // Re-apply skill upgrades to SERVER_TYPES in-place (upgrades store static
-  // values in unlockedSkills; SkillEngine re-applies them on next applySkill,
-  // but here we need to restore the boosted SERVER_TYPES caps).
-  reapplyServerTypeUpgrades(gameState)
-}
-
-// ─── Re-apply server-type upgrades from saved unlockedSkills ─────────────────
-
-function reapplyServerTypeUpgrades(state) {
-  for (const skillId of state.unlockedSkills ?? []) {
-    const skill = SKILLS[skillId]
-    if (skill?.serverUpgrade) {
-      const upg = skill.serverUpgrade
-      const def = SERVER_TYPES[upg.type]
-      if (def) {
-        def.cpuCapacity  = upg.cpuCapacity
-        def.ramCapacity  = upg.ramCapacity
-        def.diskCapacity = upg.diskCapacity
-        def.powerBase    = upg.powerBase
-      }
-    }
-  }
 }
 
 export { saveGame, loadGame, hasSave, deleteSave, getSaveInfo }
