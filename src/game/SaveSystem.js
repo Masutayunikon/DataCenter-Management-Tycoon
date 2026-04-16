@@ -2,7 +2,7 @@
 
 
 const SAVE_KEY     = 'datacenter_save'
-const SAVE_VERSION = 5  // bump when save format changes incompatibly
+const SAVE_VERSION = 6  // bump when save format changes incompatibly
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
