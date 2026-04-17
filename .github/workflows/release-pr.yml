@@ -192,14 +192,17 @@ jobs:
             git push origin "HEAD:$pr_branch" --force
 
             # ── Create or update GitHub PR ────────────────────────────────────────
-            PR_BODY=$(cat << PREOF
-## What's changing
-
-${CHANGELOG_ENTRY}
----
-*Auto-generated — merge this PR to create the \`${tag_prefix}${NEW_VERSION}\` tag and GitHub release.*
-PREOF
-)
+            TMPBODY=$(mktemp)
+            {
+              echo "## What's changing"
+              echo ""
+              echo "${CHANGELOG_ENTRY}"
+              echo "---"
+              printf '*Auto-generated — merge this PR to create the `%s%s` tag and GitHub release.*\n' \
+                "$tag_prefix" "$NEW_VERSION"
+            } > "$TMPBODY"
+            PR_BODY=$(cat "$TMPBODY")
+            rm -f "$TMPBODY"
 
             if [ -n "$EXISTING_NUM" ]; then
               gh pr edit "$EXISTING_NUM" --title "$PR_TITLE" --body "$PR_BODY"
