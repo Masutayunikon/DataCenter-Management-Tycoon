@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1] - 2026-04-17
+
+### Bug Fixes
+
+* sync server with game logic changes (fabada6796cb43f6f20798b92b2d923d5e9bb05d)
+* sync server with game logic changes (b12143d8d63b2210363d4ff6552807cfdc6511c8)
+
 ## [4.0.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v3.1.0...datacenter-game-server-v4.0.0) (2026-04-17)
 
 
