@@ -32,6 +32,11 @@ function applyDemandScale(client, scale) {
 
 function generateClients(state) {
   const scale = getDemandScale(state.day)
+  // Daily intake cap: 1 client the first year, +1 per year elapsed.
+  // Avoids overwhelming a solo player with simultaneous arrivals.
+  const yearPassed    = Math.floor((state.day ?? 1) / 365)
+  const dailyLimit    = Math.max(1, yearPassed)
+  let   addedThisTick = 0
 
   for (const serviceId of Object.keys(state.serviceSlots ?? {})) {
     if (SERVICES[serviceId]?.hidden) continue
@@ -117,11 +122,14 @@ function generateClients(state) {
     }
     if (!findBestServer(state, probeClient.cpuDemand, serviceId, probeClient)) continue
 
+    // Stop if the daily cap is already reached
+    if (addedThisTick >= dailyLimit) continue
+
     const rate = getArrivalRateForService(state, serviceId)
     if (rate <= 0) continue
     let count = Math.floor(rate)
     if (Math.random() < (rate - count)) count++
-    count = Math.min(count, freeSlots)
+    count = Math.min(count, freeSlots, dailyLimit - addedThisTick)
 
     for (let i = 0; i < count; i++) {
       const client = createClient(state.nextClientId++, state.day, serviceId)
@@ -132,6 +140,7 @@ function generateClients(state) {
       state.clientQueue.push(client)
       clientAdded = true
     }
+    addedThisTick += count
 
     if (clientAdded) playSFX('notification')
   }

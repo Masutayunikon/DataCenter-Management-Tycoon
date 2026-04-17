@@ -47,8 +47,10 @@
               {{ server.cpuLoad }}/{{ server.cpuCapacity }}
             </span>
           </div>
-          <span class="age-badge" :style="{ color: serverAgeBadgeColor(server) }">{{ serverAgeDot(server) }} {{ server.age ?? 0 }}j</span>
-          <span class="gen-badge" :style="{ color: serverGenBadgeColor(server) }" :title="`Génération ${server.generation ?? 0} (année d'achat)`">Gen {{ server.generation ?? 0 }}</span>
+          <div class="server-badges">
+            <span class="age-badge" :style="{ color: serverAgeBadgeColor(server), borderColor: serverAgeBadgeColor(server) }">{{ server.age ?? 0 }}j</span>
+            <span class="gen-badge" :style="{ color: serverGenBadgeColor(server), borderColor: serverGenBadgeColor(server) }" :title="`Génération ${server.generation ?? 0} — année d'achat`">Gen{{ server.generation ?? 0 }}</span>
+          </div>
 
           <!-- Restart row (free, probabilistic) -->
           <div v-if="server.status === 'failed' || server.status === 'warning'" class="restart-row">
@@ -85,7 +87,7 @@
             </span>
           </div>
 
-          <!-- Move all + Remove -->
+          <!-- Move all + Sell -->
           <div class="action-row">
             <button
               class="moveall-btn"
@@ -96,16 +98,13 @@
               ⬆ Tout déplacer
             </button>
             <button
-              class="remove-btn"
-              @click.stop="onRemove(i)"
-              title="Retirer le serveur (remboursement 30%)"
+              class="sell-btn"
+              @click.stop="onSellServer(i)"
+              :title="`Vendre le serveur (~${estimateSellPrice(server)}$)`"
             >
-              🗑
+              💰 {{ estimateSellPrice(server) }}$
             </button>
           </div>
-          <button class="sell-btn" @click.stop="onSellServer(i)" :title="`Vendre ~$${estimateSellPrice(server)}`">
-            Vendre ${{ estimateSellPrice(server) }}
-          </button>
 
           <!-- Resource bars -->
           <div class="res-bars">
@@ -604,32 +603,21 @@ function onInstall() {
 .moveall-btn:hover:not(:disabled) { background: #1a4d1a; }
 .moveall-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.remove-btn {
-  background: #1a0909;
-  border: 1px solid #3d1010;
-  color: #f85149;
-  font-family: monospace;
-  font-size: 10px;
-  padding: 2px 6px;
-  cursor: pointer;
-  border-radius: 2px;
+.server-badges {
+  display: flex;
+  gap: 4px;
+  margin: 3px 0 2px;
 }
-.remove-btn:hover { background: #2d0a0a; border-color: #f85149; }
 
-.age-badge {
+.age-badge, .gen-badge {
   font-family: monospace;
   font-size: 9px;
   font-weight: bold;
-  margin-top: 1px;
-}
-
-.gen-badge {
-  font-family: monospace;
-  font-size: 9px;
-  font-weight: bold;
-  margin-top: 1px;
-  margin-left: 4px;
-  opacity: 0.85;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid;
+  background: rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.02em;
 }
 
 .sell-btn {
@@ -637,14 +625,12 @@ function onInstall() {
   font-size: 9px;
   padding: 2px 6px;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 2px;
   border: 1px solid #d29922;
   background: #1a1400;
   color: #d29922;
-  width: 100%;
-  margin-top: 2px;
 }
-.sell-btn:hover { background: #2d2200; }
+.sell-btn:hover { background: #2d2200; border-color: #e8aa30; }
 
 .health-val { font-family: monospace; font-size: 9px; font-weight: bold; }
 .health-val.good { color: #3fb950; }
