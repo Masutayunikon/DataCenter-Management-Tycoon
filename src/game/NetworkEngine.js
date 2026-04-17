@@ -2,8 +2,20 @@
 
 import { SERVICES } from './data/services.js'
 
-const SWITCH_UPGRADE_COST        = 500   // $ per upgrade
+const SWITCH_UPGRADE_COST_BASE   = 500   // $ base cost (upgrade #0)
 const SWITCH_BANDWIDTH_INCREMENT = 2     // Gbps added per upgrade
+
+/**
+ * Progressive cost: 500 × (1 + n/4)²  where n = upgrades already done.
+ * First upgrade: $500 — tenth: ~$5 000 — softer than n² but clearly increasing.
+ *
+ * n │  0    1    2     3     4     5     8    10
+ * $ │ 500  800 1150  1550  2000  2550  4500  6150
+ */
+function getSwitchUpgradeCost(floor) {
+  const n = Math.floor(((floor.switchBandwidth ?? 1) - 1) / SWITCH_BANDWIDTH_INCREMENT)
+  return Math.round(SWITCH_UPGRADE_COST_BASE * Math.pow(1 + n * 0.25, 2) / 50) * 50
+}
 
 /**
  * Called each tick. Computes per-floor bandwidth usage and sets
@@ -41,13 +53,15 @@ function computeNetworkUsage(state) {
  */
 function upgradeSwitch(state, floorId) {
   const floor = (state.floors ?? []).find(f => f.id === floorId)
-  if (!floor)                       return { success: false, message: 'Étage introuvable' }
-  if (state.money < SWITCH_UPGRADE_COST)
-    return { success: false, message: `Fonds insuffisants ($${SWITCH_UPGRADE_COST} requis)` }
+  if (!floor) return { success: false, message: 'Étage introuvable' }
 
-  state.money -= SWITCH_UPGRADE_COST
+  const cost = getSwitchUpgradeCost(floor)
+  if (state.money < cost)
+    return { success: false, message: `Fonds insuffisants ($${cost} requis)` }
+
+  state.money -= cost
   floor.switchBandwidth = (floor.switchBandwidth ?? 1) + SWITCH_BANDWIDTH_INCREMENT
   return { success: true }
 }
 
-export { computeNetworkUsage, upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT }
+export { computeNetworkUsage, upgradeSwitch, getSwitchUpgradeCost, SWITCH_BANDWIDTH_INCREMENT }

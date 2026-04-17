@@ -120,5 +120,5 @@ export { unlockCell, buyFloor, getUnlockCost, isAdjacentToUnlocked } from './Gri
 export { applySkill, isServerTypeUnlocked } from './SkillEngine.js'
 export { findBestServer, getServerLoad, getCompatibleServers } from './SimUtils.js'
 export { MILESTONES } from './GameState.js'
-export { upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT } from './NetworkEngine.js'
+export { upgradeSwitch, getSwitchUpgradeCost, SWITCH_BANDWIDTH_INCREMENT } from './NetworkEngine.js'
 export { acceptIncubatorOffer, declineIncubatorOffer } from './IncubatorEngine.js'

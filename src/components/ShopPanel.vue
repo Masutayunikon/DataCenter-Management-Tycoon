@@ -191,7 +191,7 @@
       v-for="floor in gameState.floors"
       :key="floor.id"
       class="shop-item"
-      :class="{ disabled: gameState.money < SWITCH_UPGRADE_COST }"
+      :class="{ disabled: gameState.money < getSwitchUpgradeCost(floor) }"
     >
       <div class="item-icon">🔀</div>
       <div class="item-info">
@@ -203,11 +203,11 @@
           </span>
           → +{{ SWITCH_BANDWIDTH_INCREMENT }} Gbps
         </div>
-        <div class="item-cost">${{ SWITCH_UPGRADE_COST }}</div>
+        <div class="item-cost">${{ getSwitchUpgradeCost(floor) }}</div>
       </div>
       <button
         class="buy-btn"
-        :disabled="gameState.money < SWITCH_UPGRADE_COST"
+        :disabled="gameState.money < getSwitchUpgradeCost(floor)"
         @click="onUpgradeSwitch(floor.id)"
       >
         Upgrader
@@ -220,7 +220,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RACK_COST, FLOOR_COST_BASE } from '../game/GameState.js'
-import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY, upgradeSwitch, SWITCH_UPGRADE_COST, SWITCH_BANDWIDTH_INCREMENT, takeLoan, repayLoan, getTotalDebt, LOAN_TIERS } from '../game/SimulationEngine.js'
+import { getUnlockCost, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY, upgradeSwitch, getSwitchUpgradeCost, SWITCH_BANDWIDTH_INCREMENT, takeLoan, repayLoan, getTotalDebt, LOAN_TIERS } from '../game/SimulationEngine.js'
 import { EMPLOYEE_SUPPORT_DAILY, EMPLOYEE_SECURITY_DAILY } from '../game/EconomyEngine.js'
 
 const EMPLOYEE_HIRE_COST = 3000
