@@ -4,7 +4,7 @@ import { tryTriggerEvent, tickEvents } from './EventSystem.js'
 import { computeNetworkUsage, upgradeSwitch } from './NetworkEngine.js'
 import { processIncubatorOffer, acceptIncubatorOffer, declineIncubatorOffer } from './IncubatorEngine.js'
 import { generateClients, generateEnterpriseClients, assignQueuedClients, updateSatisfaction, processDepartures, updateReputation } from './ClientEngine.js'
-import { updateServerLoads, processServerFailures, computeHeat, computePower, updateServerUptime, processHacks, updateServerAge } from './ServerEngine.js'
+import { updateServerLoads, processServerFailures, computeHeat, computePower, updateServerUptime, processHacks, updateServerAge, emitGenerationNotification } from './ServerEngine.js'
 import { calculateRevenue, calculateElectricityCost, calculateMaintenanceCost, calculateEmployeeCost, generateTickets, autoResolveTickets } from './EconomyEngine.js'
 import { generateMissions, processMissionDeadlines } from './MissionEngine.js'
 import { processLoans } from './LoanEngine.js'
@@ -99,6 +99,7 @@ function processDayTick(state) {
   updateReputation(state)
   updateServerUptime(state)
   updateServerAge(state)
+  emitGenerationNotification(state)
   updateUptimeStreak(state)
   checkMilestones(state)
 

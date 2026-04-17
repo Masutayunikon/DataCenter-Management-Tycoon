@@ -7,7 +7,7 @@ import { MILESTONES } from './data/milestones.js'
 
 // ─── Factory functions ────────────────────────────────────────────────────────
 
-function createServer(type = 'BASIC') {
+function createServer(type = 'BASIC', generation = 0) {
   const def = SERVER_TYPES[type]
   return {
     type,
@@ -30,6 +30,7 @@ function createServer(type = 'BASIC') {
     failedDays:       0,
     restartAttempts:  0,
     lifetimeRestarts: 0,  // never resets — degrades restart success chance
+    generation,           // in-game year when purchased (0 = first year)
     age:              0,
     uptime:           0,
     logs:            [],

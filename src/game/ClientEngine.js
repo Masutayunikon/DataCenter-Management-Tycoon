@@ -333,6 +333,23 @@ function updateSatisfaction(state) {
     })
     if (netSaturated) worstTarget -= 2
 
+    // Hardware generation gap penalty: -3 per avg generation behind (max -12)
+    const currentYear = Math.floor(state.day / 365)
+    if (currentYear > 0) {
+      let totalGenGap = 0, genServerCount = 0
+      for (const pos of positions) {
+        const srv = getServerAt(state, pos.floorId, pos.x, pos.y, pos.slot)
+        if (srv) {
+          totalGenGap += Math.max(0, currentYear - (srv.generation ?? 0))
+          genServerCount++
+        }
+      }
+      if (genServerCount > 0) {
+        const avgGenGap = totalGenGap / genServerCount
+        worstTarget -= Math.min(12, Math.round(avgGenGap * 3))
+      }
+    }
+
     const delta = (worstTarget - client.satisfaction) * 0.1
     client.satisfaction = clamp(0, 100, client.satisfaction + delta)
 

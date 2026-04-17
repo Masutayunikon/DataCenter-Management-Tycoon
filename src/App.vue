@@ -555,7 +555,7 @@ async function onInstallServer({ cell, slot, type, cost }) {
     return
   }
   if (gameState.money < cost) { playSFX('error'); return }
-  cell.rack.servers[slot] = createServer(type)
+  cell.rack.servers[slot] = createServer(type, Math.floor(gameState.day / 365))
   gameState.money -= cost
   playSFX('click')
 }

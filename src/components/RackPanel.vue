@@ -48,6 +48,7 @@
             </span>
           </div>
           <span class="age-badge" :style="{ color: serverAgeBadgeColor(server) }">{{ serverAgeDot(server) }} {{ server.age ?? 0 }}j</span>
+          <span class="gen-badge" :style="{ color: serverGenBadgeColor(server) }" :title="`Génération ${server.generation ?? 0} (année d'achat)`">Gen {{ server.generation ?? 0 }}</span>
 
           <!-- Restart row (free, probabilistic) -->
           <div v-if="server.status === 'failed' || server.status === 'warning'" class="restart-row">
@@ -381,6 +382,14 @@ function serverAgeDot(server) {
   return '●'
 }
 
+function serverGenBadgeColor(server) {
+  const currentYear = Math.floor((props.gameState.day ?? 0) / 365)
+  const gap = currentYear - (server.generation ?? 0)
+  if (gap >= 2) return '#f85149'   // 2+ generations old → red
+  if (gap >= 1) return '#d29922'   // 1 generation old → orange
+  return '#3fb950'                  // current gen → green
+}
+
 function estimateSellPrice(server) {
   const baseDef  = SERVER_TYPES[server.type]
   const baseCost = baseDef?.cost ?? 500
@@ -612,6 +621,15 @@ function onInstall() {
   font-size: 9px;
   font-weight: bold;
   margin-top: 1px;
+}
+
+.gen-badge {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: bold;
+  margin-top: 1px;
+  margin-left: 4px;
+  opacity: 0.85;
 }
 
 .sell-btn {

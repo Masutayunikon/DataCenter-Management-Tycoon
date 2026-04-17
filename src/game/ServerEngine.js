@@ -61,8 +61,31 @@ function processServerFailures(state) {
 
       if (server.status === 'failed') {
         server.failedDays++
-        // Reset restartAttempts each day in failed state so tooltip stays accurate
-        if (server.failedDays === 1) server.restartAttempts = 0
+
+        // Day 1: automatic restart attempt before waiting for expensive repair
+        if (server.failedDays === 1) {
+          server.restartAttempts = 0
+          const lifetimeRestarts = server.lifetimeRestarts ?? 0
+          const chance = Math.max(0.05, 0.80 - lifetimeRestarts * 0.15)
+          server.restartAttempts++
+          server.lifetimeRestarts = lifetimeRestarts + 1
+
+          if (Math.random() < chance) {
+            server.status        = 'ok'
+            server.health        = Math.max(60, server.health)
+            server.failedDays    = 0
+            server.restartAttempts = 0
+            addServerLog(server, state.day, 'repair', `Redémarrage auto réussi (${Math.round(chance * 100)}%)`)
+            addNotification(state, `♻️ Redémarrage auto ${serverLabel(cell, slot)} réussi`, 'info')
+          } else {
+            addServerLog(server, state.day, 'warning', `Redémarrage auto échoué — réparation dans ${AUTO_REPAIR_DAYS - 1}j`)
+            addTicket(state, 'incident',
+              `⚠️ Redémarrage auto ${serverLabel(cell, slot)} échoué — réparation auto dans ${AUTO_REPAIR_DAYS - 1}j`,
+              'warning', cell, slot)
+          }
+          continue
+        }
+
         if (server.failedDays >= AUTO_REPAIR_DAYS) {
           // Insurance gives 50% rebate on auto-repair
           const insuranceDiscount = state.hasInsurance ? 0.5 : 1.0
@@ -76,6 +99,12 @@ function processServerFailures(state) {
           addTicket(state, 'incident',
             `Réparation auto ${serverLabel(cell, slot)} (-$${autoRepairCost}${state.hasInsurance ? ' 🏦' : ''})`,
             'critical', cell, slot)
+          // Suggest replacement after repeated failures
+          if ((server.lifetimeRestarts ?? 0) >= 3) {
+            addNotification(state,
+              `🔧 ${serverLabel(cell, slot)} : pannes répétées (${server.lifetimeRestarts}×) — envisagez un remplacement`,
+              'warning')
+          }
         }
         continue
       }
@@ -406,6 +435,17 @@ function updateServerAge(state) {
   }
 }
 
+// ─── Hardware generation notifications ───────────────────────────────────────
+// Fires once per in-game year to remind player that new-gen hardware is available
+
+function emitGenerationNotification(state) {
+  if (!state.day || state.day % 365 !== 0) return
+  const currentYear = Math.floor(state.day / 365)
+  addNotification(state,
+    `📦 Génération ${currentYear} disponible — les nouveaux serveurs sont ~${currentYear * 10}% plus performants`,
+    'info')
+}
+
 // ─── Sell server ──────────────────────────────────────────────────────────────
 
 function sellServer(state, floorId, x, y, slot) {
@@ -444,4 +484,5 @@ export {
   processHacks, getHackProtection, BASE_HACK_CHANCE,
   AUTO_REPAIR_DAYS, AUTO_REPAIR_COST,
   updateServerAge, sellServer,
+  emitGenerationNotification,
 }
