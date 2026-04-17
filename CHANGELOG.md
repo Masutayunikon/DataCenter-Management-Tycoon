@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1] - 2026-04-17
+
+### Bug Fixes
+
+* progressive switch upgrade cost — 500×(1+n/4)² instead of flat 500$
+* cap daily client arrivals to 1 per year elapsed, clean server badges and actions
+
 ## [2.4.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.4...datacenter-site-v2.4.0) (2026-04-17)
 
 
