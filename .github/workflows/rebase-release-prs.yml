@@ -7,6 +7,8 @@ on:
 jobs:
   rebase:
     runs-on: ubuntu-latest
+    # Skip commits made by this workflow itself to avoid infinite loops
+    if: "!contains(github.event.head_commit.message, '[skip rebase]')"
     permissions:
       contents: write
       pull-requests: read
@@ -16,14 +18,54 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
-      - name: Rebase open release-please PRs
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          branches=$(gh pr list --search "head:release-please--branches--main" --json headRefName --jq '.[].headRefName')
+      # ── Step 1: sync the manifest with actual package.json versions ──────────
+      # If the manifest is stale (e.g. package.json says 3.0.2 but manifest says
+      # 3.0.1), release-please keeps reopening the same PR on every push.
+      # Fix: keep manifest == package.json so release-please has the right baseline.
+      - name: Sync manifest with package.json versions
+        id: sync
+        run: |
+          ROOT_VERSION=$(jq -r '.version' package.json 2>/dev/null || echo "")
+          SERVER_VERSION=$(jq -r '.version' server/package.json 2>/dev/null || echo "")
+          MANIFEST=$(cat .release-please-manifest.json)
+          UPDATED=$MANIFEST
+
+          if [ -n "$ROOT_VERSION" ]; then
+            UPDATED=$(echo "$UPDATED" | jq --arg v "$ROOT_VERSION" \
+              'if .["."] != $v then . + {".": $v} else . end')
+          fi
+          if [ -n "$SERVER_VERSION" ]; then
+            UPDATED=$(echo "$UPDATED" | jq --arg v "$SERVER_VERSION" \
+              'if .["server"] != $v then . + {"server": $v} else . end')
+          fi
+
+          if [ "$MANIFEST" != "$UPDATED" ]; then
+            echo "$UPDATED" > .release-please-manifest.json
+            git add .release-please-manifest.json
+            git commit -m "chore: sync manifest with package.json versions [skip rebase]"
+            git push origin main
+            echo "synced=true" >> $GITHUB_OUTPUT
+            echo "✓ manifest synced — release-please PRs will rebase on next push"
+          else
+            echo "synced=false" >> $GITHUB_OUTPUT
+            echo "→ manifest already in sync"
+          fi
+
+      # ── Step 2: rebase open release PRs onto the now-clean main ─────────────
+      - name: Rebase open release-please PRs
+        if: steps.sync.outputs.synced == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          branches=$(gh pr list \
+            --search "head:release-please--branches--main" \
+            --json headRefName \
+            --jq '.[].headRefName')
 
           for branch in $branches; do
             echo "→ Rebasing $branch"
@@ -32,19 +74,25 @@ jobs:
 
             if git rebase origin/main; then
               git push origin "HEAD:$branch" --force-with-lease
-              echo "✓ $branch rebased"
+              echo "✓ $branch rebased cleanly"
             else
-              # Résoudre le conflict du manifest en fusionnant les deux JSON
+              # Conflict resolution.
+              # IMPORTANT: inside `git rebase`, --theirs = the PR's commit being
+              # replayed, --ours = origin/main. Keep the PR's versions for all
+              # release-managed files (manifest, package.json, changelogs).
               if [ -f .release-please-manifest.json ]; then
-                OURS=$(git show "origin/$branch:.release-please-manifest.json")
-                git checkout origin/main -- .release-please-manifest.json
-                # Fusionner : garder les valeurs de la PR par-dessus main
-                echo "$OURS" | jq --slurpfile main .release-please-manifest.json '$main[0] + .' > /tmp/merged-manifest.json
-                mv /tmp/merged-manifest.json .release-please-manifest.json
-                git add .release-please-manifest.json
+                for f in \
+                  .release-please-manifest.json \
+                  package.json \
+                  server/package.json \
+                  CHANGELOG.md \
+                  server/CHANGELOG.md; do
+                  git checkout --theirs "$f" 2>/dev/null || true
+                done
+                git add -A
                 GIT_EDITOR=true git rebase --continue
                 git push origin "HEAD:$branch" --force-with-lease
-                echo "✓ $branch rebased (manifest conflict resolved)"
+                echo "✓ $branch rebased (conflicts resolved: PR versions kept)"
               else
                 git rebase --abort
                 echo "✗ $branch — conflict non résolvable automatiquement"
