@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.4.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.4...datacenter-site-v2.4.0) (2026-04-17)
+
+
+### Features
+
+* auto-restart on failure + hardware generation system ([f297701](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/f2977013a749029e4b427e0043bb0ab69fbba1b2))
+* bank loans, hardware aging, and SLA tiers ([df05564](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/df0556448b677581e6a71e6f243b79114caff47f))
+* dynamic hardware limits in ServicesPanel + catastrophe events ([46e0e67](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/46e0e67a95f7b57f91fd378502b83408a0d25b17))
+* network bandwidth per floor + startup incubator contracts ([d0c39f8](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/d0c39f837d39897dd0949094c147f8b87329fdde))
+
+
+### Bug Fixes
+
+* sync server with game logic changes (46e0e67a95f7b57f91fd378502b83408a0d25b17) ([de99c55](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/de99c5567a843514e9baaf8b1faa97230f745ad6))
+* sync server with game logic changes (d0c39f837d39897dd0949094c147f8b87329fdde) ([e86c448](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e86c4484214519da8f10d0a47586f0c07500eddb))
+* sync server with game logic changes (df0556448b677581e6a71e6f243b79114caff47f) ([8bc7226](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/8bc7226dcbda6aba499fbe41acb854ef43ffb739))
+* sync server with game logic changes (f2977013a749029e4b427e0043bb0ab69fbba1b2) ([0ba8ec9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/0ba8ec90e7cd927670c74948d28f0b45b8dd0b59))
+
 ## [2.3.4](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-site-v2.3.3...datacenter-site-v2.3.4) (2026-04-16)
 
 
