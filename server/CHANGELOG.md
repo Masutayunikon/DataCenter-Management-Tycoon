@@ -1,5 +1,43 @@
 # Changelog
 
+## [4.0.0](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v3.1.0...datacenter-game-server-v4.0.0) (2026-04-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* initial public release
+
+### Features
+
+* add env var support for server config + runtipi app definitions ([c4c368e](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/c4c368eab58573d032348ca2212ca2beec51133c))
+* initial public release ([dc44725](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/dc44725509ff022e6e777861656927dd6cf6c735))
+* pool qui ne se reset plus et moins de generation ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+* require 365 days of single-service commitment to become specialist ([e890b22](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e890b2221d0073b59772c224da22b9e7283c1578))
+
+
+### Bug Fixes
+
+* add debug logs for install_server action ([e6bd608](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e6bd608ad01de517e02138853da3961254ff5fe4))
+* add SERVER_DESCRIPTION and SERVER_IMAGE_URL env vars ([188ea0a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/188ea0a94e31350903436e0081a1d592ed5388c6))
+* fix rack ([b44bab9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/b44bab9f3ef1b17f078e7c28d76f38073edfd134))
+* generate pool clients only for offered services, add TTL to stale clients ([72ffc8a](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/72ffc8affd3f260881306ad59f811ac16cd9ecdf))
+* inline SERVICES data in server to remove frontend import ([de7030c](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/de7030c5453a97166a7de0a8390b042a613b1002))
+* reset all packages to v1.0.0 ([793d6ae](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/793d6ae4a6ddbc7b29e4fc4b90b715e4a9932ef4))
+* separate release PRs per package and add dev dockerfile ([132d2df](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/132d2dfeb7a9bcd89604fd8eedd09fa6e91d8418))
+* specialist detection now includes template-mode services ([6c721ef](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6c721ef9947c626369c7295aa4ec8cf25096ba84))
+* sync server with game logic changes (46e0e67a95f7b57f91fd378502b83408a0d25b17) ([de99c55](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/de99c5567a843514e9baaf8b1faa97230f745ad6))
+* sync server with game logic changes (535f4664eb674bdeb1ed7e90bad0fbf8f0149a82) ([99b2839](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/99b2839351d600bb00cd0763511519066b79af6d))
+* sync server with game logic changes (aabdec4461ff1b1386043706e92e171de90f4d8b) ([6fbd1d2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/6fbd1d2320d0fb81177d6ba49076ebf08b1d9743))
+* sync server with game logic changes (d0c39f837d39897dd0949094c147f8b87329fdde) ([e86c448](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e86c4484214519da8f10d0a47586f0c07500eddb))
+* sync server with game logic changes (df0556448b677581e6a71e6f243b79114caff47f) ([8bc7226](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/8bc7226dcbda6aba499fbe41acb854ef43ffb739))
+* sync server with game logic changes (f2977013a749029e4b427e0043bb0ab69fbba1b2) ([0ba8ec9](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/0ba8ec90e7cd927670c74948d28f0b45b8dd0b59))
+* trigger release-please ([a7d4fbc](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/a7d4fbc6f08d5fe827d90cb7905a7867b3a3eda1))
+* trigger release-please ([7de5222](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/7de522212232230d94d74ceb0d81f58d53521b94))
+* trigger release-please ([c3ff683](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/c3ff683a0ecd0b123ce335e4bd8bac1b83b9a9f1))
+* trigger release-please ([e4a9594](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e4a9594cfa8dae9e5ac9e7b03d3f21c2ad490999))
+* trigger release-please ([8590117](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/85901177eea09207fe87060505035aba613f99f2))
+* use repo root as docker context to include src/game imports ([e92574e](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/commit/e92574e4ccb22f7516657078d9aa810a2db6bcbf))
+
 ## [3.0.2](https://github.com/Masutayunikon/DataCenter-Management-Tycoon/compare/datacenter-game-server-v3.0.1...datacenter-game-server-v3.0.2) (2026-04-16)
 
 
