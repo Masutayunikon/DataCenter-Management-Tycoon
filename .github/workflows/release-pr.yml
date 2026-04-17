@@ -1,0 +1,239 @@
+name: Release PRs
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    # Skip when a release PR is merged (squash → title becomes commit message)
+    # or when explicitly opted out
+    if: |
+      !startsWith(github.event.head_commit.message, 'chore: release') &&
+      !contains(github.event.head_commit.message, '[skip release]')
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Process releases
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # ────────────────────────────────────────────────────────────────────────
+          # process_package NAME TAG_PREFIX MANIFEST CHANGELOG PKG_JSON PR_BRANCH
+          #                  PR_TITLE_BASE [PATHS...]
+          # ────────────────────────────────────────────────────────────────────────
+          process_package() {
+            local name="$1"
+            local tag_prefix="$2"
+            local manifest="$3"
+            local changelog="$4"
+            local pkg_json="$5"
+            local pr_branch="$6"
+            local pr_title_base="$7"
+            shift 7
+            # "$@" = path specs to monitor
+
+            echo ""
+            echo "━━━ $name ━━━"
+            git checkout main 2>/dev/null || true
+
+            # ── Guard: skip if HEAD is a release-merge commit for this package ──
+            # (regular-merge PRs aren't caught by the job-level if-condition above)
+            if git diff --name-only HEAD^ HEAD 2>/dev/null | grep -qF "$manifest"; then
+              echo "  → HEAD touches $manifest — release merge detected — skipping"
+              return 0
+            fi
+
+            # ── Current version from manifest ────────────────────────────────────
+            CURRENT_VERSION=$(jq -r '.version' "$manifest")
+            echo "  manifest version : $CURRENT_VERSION"
+
+            # ── Commits since last tag touching this package's paths ─────────────
+            LAST_TAG=$(git tag -l "${tag_prefix}*" --sort=-version:refname | head -1)
+            echo "  last tag         : ${LAST_TAG:-<none>}"
+
+            if [ -z "$LAST_TAG" ]; then
+              COMMITS=$(git log --format="%s" -- "$@" 2>/dev/null || true)
+            else
+              COMMITS=$(git log "${LAST_TAG}..HEAD" --format="%s" -- "$@" 2>/dev/null || true)
+            fi
+
+            if [ -z "$COMMITS" ]; then
+              echo "  → no commits touching $name paths — skipping"
+              return 0
+            fi
+
+            # ── Filter: keep only release-worthy commits ─────────────────────────
+            RELEASE_COMMITS=$(echo "$COMMITS" | grep -E "^(feat|fix|perf)(\([^)]*\))?(!)?:" || true)
+            if [ -z "$RELEASE_COMMITS" ]; then
+              echo "  → no feat/fix/perf commits — skipping"
+              return 0
+            fi
+
+            # ── Detect bump type ─────────────────────────────────────────────────
+            if echo "$COMMITS" | grep -qE "^[a-z]+(\([^)]*\))?!:"; then
+              BUMP="major"
+            elif echo "$COMMITS" | grep -qE "^feat(\([^)]*\))?:"; then
+              BUMP="minor"
+            else
+              BUMP="patch"
+            fi
+
+            # ── Compute new version ──────────────────────────────────────────────
+            IFS='.' read -r V_MAJOR V_MINOR V_PATCH <<< "$CURRENT_VERSION"
+            case "$BUMP" in
+              major) NEW_VERSION="$((V_MAJOR + 1)).0.0" ;;
+              minor) NEW_VERSION="${V_MAJOR}.$((V_MINOR + 1)).0" ;;
+              patch) NEW_VERSION="${V_MAJOR}.${V_MINOR}.$((V_PATCH + 1))" ;;
+            esac
+
+            PR_TITLE="${pr_title_base} v${NEW_VERSION}"
+            echo "  bump             : $BUMP  (v${CURRENT_VERSION} → v${NEW_VERSION})"
+
+            # ── Check for an existing open PR on this branch ─────────────────────
+            EXISTING=$(gh pr list --head "$pr_branch" --base main --state open \
+              --json number,title --jq '.[0] // empty' 2>/dev/null || true)
+            EXISTING_NUM=$(echo "$EXISTING" | jq -r '.number // ""' 2>/dev/null || true)
+
+            # ── Build changelog entry ────────────────────────────────────────────
+            TMPLOG=$(mktemp)
+            echo "## [${NEW_VERSION}] - $(date +%Y-%m-%d)" >> "$TMPLOG"
+            echo "" >> "$TMPLOG"
+
+            BREAKING=$(echo "$COMMITS" | grep -E "^[a-z]+(\([^)]*\))?!:" || true)
+            FEATURES=$(echo "$COMMITS" | grep -E "^feat(\([^)]*\))?:" || true)
+            FIXES=$(echo "$COMMITS" | grep -E "^fix(\([^)]*\))?:" || true)
+            PERFS=$(echo "$COMMITS" | grep -E "^perf(\([^)]*\))?:" || true)
+
+            if [ -n "$BREAKING" ]; then
+              echo "### ⚠ Breaking Changes" >> "$TMPLOG"
+              echo "" >> "$TMPLOG"
+              while IFS= read -r msg; do echo "* $msg" >> "$TMPLOG"; done <<< "$BREAKING"
+              echo "" >> "$TMPLOG"
+            fi
+            if [ -n "$FEATURES" ]; then
+              echo "### Features" >> "$TMPLOG"
+              echo "" >> "$TMPLOG"
+              while IFS= read -r msg; do
+                clean=$(echo "$msg" | sed -E 's/^feat(\([^)]*\))?!?: //')
+                echo "* $clean" >> "$TMPLOG"
+              done <<< "$FEATURES"
+              echo "" >> "$TMPLOG"
+            fi
+            if [ -n "$FIXES" ]; then
+              echo "### Bug Fixes" >> "$TMPLOG"
+              echo "" >> "$TMPLOG"
+              while IFS= read -r msg; do
+                clean=$(echo "$msg" | sed -E 's/^fix(\([^)]*\))?!?: //')
+                echo "* $clean" >> "$TMPLOG"
+              done <<< "$FIXES"
+              echo "" >> "$TMPLOG"
+            fi
+            if [ -n "$PERFS" ]; then
+              echo "### Performance" >> "$TMPLOG"
+              echo "" >> "$TMPLOG"
+              while IFS= read -r msg; do
+                clean=$(echo "$msg" | sed -E 's/^perf(\([^)]*\))?!?: //')
+                echo "* $clean" >> "$TMPLOG"
+              done <<< "$PERFS"
+              echo "" >> "$TMPLOG"
+            fi
+
+            CHANGELOG_ENTRY=$(cat "$TMPLOG")
+            rm -f "$TMPLOG"
+
+            # ── Build PR branch fresh from main ──────────────────────────────────
+            git branch -D "$pr_branch" 2>/dev/null || true
+            git checkout -b "$pr_branch"
+
+            # Update manifest
+            echo "{\"version\": \"$NEW_VERSION\"}" > "$manifest"
+
+            # Update package.json version
+            jq --arg v "$NEW_VERSION" '.version = $v' "$pkg_json" > /tmp/_pkg.json
+            mv /tmp/_pkg.json "$pkg_json"
+
+            # Prepend new entry to CHANGELOG.md (after the # Changelog header)
+            if [ -f "$changelog" ]; then
+              HEADER=$(head -1 "$changelog")
+              BODY=$(tail -n +2 "$changelog")
+              {
+                echo "$HEADER"
+                echo ""
+                echo "$CHANGELOG_ENTRY"
+                echo "$BODY"
+              } > /tmp/_changelog.md
+              mv /tmp/_changelog.md "$changelog"
+            else
+              mkdir -p "$(dirname "$changelog")"
+              {
+                echo "# Changelog"
+                echo ""
+                echo "$CHANGELOG_ENTRY"
+              } > "$changelog"
+            fi
+
+            git add "$manifest" "$pkg_json" "$changelog"
+            git commit -m "$PR_TITLE"
+            git push origin "HEAD:$pr_branch" --force
+
+            # ── Create or update GitHub PR ────────────────────────────────────────
+            PR_BODY=$(cat << PREOF
+## What's changing
+
+${CHANGELOG_ENTRY}
+---
+*Auto-generated — merge this PR to create the \`${tag_prefix}${NEW_VERSION}\` tag and GitHub release.*
+PREOF
+)
+
+            if [ -n "$EXISTING_NUM" ]; then
+              gh pr edit "$EXISTING_NUM" --title "$PR_TITLE" --body "$PR_BODY"
+              echo "  ✓ PR #$EXISTING_NUM updated → $PR_TITLE"
+            else
+              gh pr create \
+                --head "$pr_branch" \
+                --base main \
+                --title "$PR_TITLE" \
+                --body "$PR_BODY"
+              echo "  ✓ PR created → $PR_TITLE"
+            fi
+
+            git checkout main
+          }
+
+          # ── Site (src/, public/, index.html, package.json, Dockerfile) ─────────
+          process_package \
+            "site" \
+            "datacenter-site-v" \
+            "release-manifest-site.json" \
+            "CHANGELOG.md" \
+            "package.json" \
+            "release/site" \
+            "chore: release site" \
+            src/ public/ index.html package.json Dockerfile
+
+          # ── Server (server/) ──────────────────────────────────────────────────
+          process_package \
+            "server" \
+            "datacenter-game-server-v" \
+            "release-manifest-server.json" \
+            "server/CHANGELOG.md" \
+            "server/package.json" \
+            "release/server" \
+            "chore: release server" \
+            server/

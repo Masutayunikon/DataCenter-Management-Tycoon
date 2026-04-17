@@ -1,0 +1,87 @@
+name: Create Release Tags
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    # Only run when a release PR is merged
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.title, 'chore: release')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Parse release info
+        id: parse
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          # Expected formats:
+          #   "chore: release site v2.5.0"
+          #   "chore: release server v3.2.0"
+          PACKAGE=$(echo "$TITLE" | sed -E 's/chore: release (site|server) v.*/\1/')
+          VERSION=$(echo "$TITLE" | sed -E 's/chore: release (site|server) v//')
+
+          case "$PACKAGE" in
+            site)   TAG="datacenter-site-v${VERSION}" ;;
+            server) TAG="datacenter-game-server-v${VERSION}" ;;
+            *)
+              echo "❌ Unknown package: '$PACKAGE' — cannot create tag"
+              exit 1
+              ;;
+          esac
+
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"  >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG"          >> "$GITHUB_OUTPUT"
+          echo "  package : $PACKAGE"
+          echo "  version : $VERSION"
+          echo "  tag     : $TAG"
+
+      - name: Create git tag
+        run: |
+          TAG="${{ steps.parse.outputs.tag }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "✓ Tag pushed: $TAG"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          TAG="${{ steps.parse.outputs.tag }}"
+          PACKAGE="${{ steps.parse.outputs.package }}"
+          VERSION="${{ steps.parse.outputs.version }}"
+
+          # Extract release notes from CHANGELOG.md (first entry = just-released version)
+          if [ "$PACKAGE" = "site" ]; then
+            CL_FILE="CHANGELOG.md"
+          else
+            CL_FILE="server/CHANGELOG.md"
+          fi
+
+          if [ -f "$CL_FILE" ]; then
+            # Extract content between first "## " header and the next one
+            NOTES=$(awk '/^## /{if(found) exit; found=1} found{print}' "$CL_FILE")
+          else
+            NOTES="Release $VERSION"
+          fi
+
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes "$NOTES"
+
+          echo "✓ GitHub release created: $TAG"
