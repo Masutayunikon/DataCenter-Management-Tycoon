@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.5.0] - 2026-04-19
+
+### Features
+
+* server renewal system + Gen year display + LIVE_MIGRATION skill
+
+### Bug Fixes
+
+* 6 bugs — SP deduction, audio pop, floor/rack buy, switch MP sync, departure penalty, loan display
+
 ## [2.4.1] - 2026-04-17
 
 ### Bug Fixes
