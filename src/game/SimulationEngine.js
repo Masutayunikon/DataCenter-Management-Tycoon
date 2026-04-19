@@ -112,7 +112,7 @@ export { DAY_DURATION_MS, processDayTick }
 
 export { getArrivalRate, generateEnterpriseClients, assignClientToServer, getServersForQueueClient, EMPLOYEE_ASSIGN_CAPACITY, EMPLOYEE_ASSIGN_DAILY } from './ClientEngine.js'
 export { resolveMission } from './MissionEngine.js'
-export { repairServer, restartServer, moveClient, moveAllClients, removeServer, processHacks, getHackProtection, BASE_HACK_CHANCE, AUTO_REPAIR_DAYS, AUTO_REPAIR_COST, sellServer } from './ServerEngine.js'
+export { repairServer, restartServer, moveClient, moveAllClients, removeServer, processHacks, getHackProtection, BASE_HACK_CHANCE, AUTO_REPAIR_DAYS, AUTO_REPAIR_COST, sellServer, renewServer } from './ServerEngine.js'
 export { takeLoan, repayLoan, getTotalDebt, LOAN_TIERS } from './LoanEngine.js'
 export { setServiceSLA, SLA_CONFIG } from './SLAEngine.js'
 export { applyPriceChange } from './EconomyEngine.js'

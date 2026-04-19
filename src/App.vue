@@ -75,6 +75,7 @@
         @open-terminal="onOpenTerminal"
         @repair-server="onRepairServer"
         @restart-server="onRestartServer"
+        @renew-server="onRenewServer"
         @connect-mission="onConnectMission"
       />
     </div>
@@ -221,7 +222,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { createGameState, createRack, createServer, RACK_COST } from './game/GameState.js'
-import { DAY_DURATION_MS, processDayTick, moveClient, repairServer, restartServer, unlockCell, buyFloor, acceptIncubatorOffer, declineIncubatorOffer } from './game/SimulationEngine.js'
+import { DAY_DURATION_MS, processDayTick, moveClient, repairServer, restartServer, renewServer, unlockCell, buyFloor, acceptIncubatorOffer, declineIncubatorOffer } from './game/SimulationEngine.js'
 import { applySkill } from './game/SkillEngine.js'
 import { saveGame, loadGame, hasSave } from './game/SaveSystem.js'
 import { useMultiplayer } from './game/useMultiplayer.js'
@@ -599,6 +600,16 @@ async function onRestartServer({ floorId, x, y, slot }) {
     return
   }
   restartServer(gameState, floorId, x, y, slot)
+  playSFX('click')
+}
+
+async function onRenewServer({ floorId, x, y, slot }) {
+  if (appMode.value === 'mp') {
+    await mp.sendAction('renew_server', { floorId, x, y, slot })
+    playSFX('click')
+    return
+  }
+  renewServer(gameState, floorId, x, y, slot)
   playSFX('click')
 }
 

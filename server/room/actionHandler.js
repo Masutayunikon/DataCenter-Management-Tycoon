@@ -123,6 +123,13 @@ export async function processAction(room, socketId, type, payload) {
         break
       }
 
+      case 'renew_server': {
+        const { renewServer } = await import('../../src/game/ServerEngine.js')
+        const result = renewServer(state, payload.floorId, payload.x, payload.y, payload.slot)
+        if (!result.success) return { ok: false, error: result.message }
+        break
+      }
+
       case 'restart_server': {
         const { restartServer } = await import('../../src/game/ServerEngine.js')
         restartServer(state, payload.floorId, payload.x, payload.y, payload.slot)

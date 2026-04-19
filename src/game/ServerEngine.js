@@ -1,6 +1,6 @@
 // ServerEngine.js — server load, failures, heat/power, repair, move, remove
 
-import { SERVER_TYPES } from './GameState.js'
+import { SERVER_TYPES, createServer } from './GameState.js'
 import { allGridCells, getFloor, getServerAt, addServerLog, serverLabel, clamp, findBestServer, serverFits } from './SimUtils.js'
 import { addTicket, addTicketRaw, addNotification } from './TicketEngine.js'
 import { getEventBonus, getEventMultiplier } from './EventSystem.js'
@@ -441,9 +441,68 @@ function updateServerAge(state) {
 function emitGenerationNotification(state) {
   if (!state.day || state.day % 365 !== 0) return
   const currentYear = Math.floor(state.day / 365)
+  const displayYear = 2025 + currentYear
   addNotification(state,
-    `📦 Génération ${currentYear} disponible — les nouveaux serveurs sont ~${currentYear * 10}% plus performants`,
+    `📦 Génération ${displayYear} disponible — renouvelez vos serveurs (Gen${displayYear} ~${currentYear * 10}% plus performants)`,
     'info')
+}
+
+// ─── Renew server ─────────────────────────────────────────────────────────────
+
+function renewServer(state, floorId, x, y, slot) {
+  const floor = getFloor(state, floorId)
+  const cell  = floor?.grid[y]?.[x]
+  if (!cell?.rack) return { success: false, message: 'Rack introuvable' }
+  const server = cell.rack.servers[slot]
+  if (!server)    return { success: false, message: 'Slot vide' }
+
+  const currentYear = Math.floor(state.day / 365)
+  if ((server.generation ?? 0) >= currentYear)
+    return { success: false, message: 'Serveur déjà à jour' }
+  if (server.status === 'repairing')
+    return { success: false, message: 'Réparation en cours' }
+
+  const def = SERVER_TYPES[server.type]
+  if (!def) return { success: false, message: 'Type inconnu' }
+  if (state.money < def.cost) return { success: false, message: `Fonds insuffisants ($${def.cost} requis)` }
+
+  state.money -= def.cost
+
+  const displayYear = 2025 + currentYear
+  const hasLiveMigration = state.unlockedSkills?.includes('LIVE_MIGRATION')
+
+  if (hasLiveMigration) {
+    // Swap à chaud : les clients gardent leur serverPos (même slot), les loads
+    // sont recalculés automatiquement chaque tick par updateServerLoads
+    cell.rack.servers[slot] = createServer(server.type, currentYear)
+    addNotification(state,
+      `🔄 Serveur renouvelé → Gen${displayYear} — migration à chaud réussie, aucune interruption`,
+      'info')
+  } else {
+    // Sans skill : les clients partent en file d'attente
+    const evictedIds = new Set()
+    const onServer   = state.clients.filter(c =>
+      c.serverPos?.floorId === floorId && c.serverPos?.x === x &&
+      c.serverPos?.y === y && c.serverPos?.slot === slot
+    )
+    for (const client of onServer) {
+      client.serverPos   = null
+      client.daysInQueue = 0
+      evictedIds.add(client.id)
+      state.clientQueue.push(client)
+    }
+    state.clients = state.clients.filter(c => !evictedIds.has(c.id))
+
+    cell.rack.servers[slot] = createServer(server.type, currentYear)
+    const evicted = onServer.length
+    addNotification(state,
+      evicted > 0
+        ? `🔄 Serveur renouvelé → Gen${displayYear} — ${evicted} client(s) remis en file d'attente`
+        : `🔄 Serveur renouvelé → Gen${displayYear}`,
+      'info')
+  }
+
+  return { success: true }
 }
 
 // ─── Sell server ──────────────────────────────────────────────────────────────
@@ -484,5 +543,5 @@ export {
   processHacks, getHackProtection, BASE_HACK_CHANCE,
   AUTO_REPAIR_DAYS, AUTO_REPAIR_COST,
   updateServerAge, sellServer,
-  emitGenerationNotification,
+  emitGenerationNotification, renewServer,
 }

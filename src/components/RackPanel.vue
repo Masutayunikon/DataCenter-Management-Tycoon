@@ -49,7 +49,7 @@
           </div>
           <div class="server-badges">
             <span class="age-badge" :style="{ color: serverAgeBadgeColor(server), borderColor: serverAgeBadgeColor(server) }">{{ server.age ?? 0 }}j</span>
-            <span class="gen-badge" :style="{ color: serverGenBadgeColor(server), borderColor: serverGenBadgeColor(server) }" :title="`Génération ${server.generation ?? 0} — année d'achat`">Gen{{ server.generation ?? 0 }}</span>
+            <span class="gen-badge" :style="{ color: serverGenBadgeColor(server), borderColor: serverGenBadgeColor(server) }" :title="`Génération ${2025 + (server.generation ?? 0)} — année d'achat`">Gen{{ 2025 + (server.generation ?? 0) }}</span>
           </div>
 
           <!-- Restart row (free, probabilistic) -->
@@ -159,6 +159,19 @@
             </div>
           </div>
 
+          <!-- Renew server (outdated generation) -->
+          <div v-if="isOutdated(server)" class="action-row">
+            <button
+              class="renew-btn"
+              :disabled="gameState.money < (SERVER_TYPES[server.type]?.cost ?? 0) || server.status === 'repairing'"
+              :title="`Renouveler vers Gen${2025 + currentYear} — $${SERVER_TYPES[server.type]?.cost ?? 0}${gameState.unlockedSkills?.includes('LIVE_MIGRATION') ? ' (migration à chaud)' : ' (clients en file)'}`"
+              @click.stop="onRenew(i)"
+            >
+              🔄 Renouveler → Gen{{ 2025 + currentYear }}
+              <span class="renew-cost">${{ SERVER_TYPES[server.type]?.cost ?? 0 }}</span>
+            </button>
+          </div>
+
           <!-- Move target selector -->
           <div v-if="movingClientId !== null && hasClientOnSlot(i)" class="move-targets">
             <div class="move-label">Déplacer vers :</div>
@@ -216,17 +229,18 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { SERVER_TYPES, SERVICES } from '../game/GameState.js'
-import { getCompatibleServers, moveAllClients, removeServer, sellServer } from '../game/SimulationEngine.js'
+import { getCompatibleServers, moveAllClients, removeServer, sellServer, renewServer } from '../game/SimulationEngine.js'
 
 const props = defineProps({
   cell:      { type: Object, required: true },
   gameState: { type: Object, required: true },
 })
 
-const emit = defineEmits(['close', 'install-server', 'move-client', 'open-terminal', 'repair-server', 'restart-server'])
+const emit = defineEmits(['close', 'install-server', 'move-client', 'open-terminal', 'repair-server', 'restart-server', 'renew-server'])
 
 const rack        = computed(() => props.cell.rack)
 const serverCount = computed(() => rack.value.servers.filter(s => s !== null).length)
+const currentYear = computed(() => Math.floor((props.gameState.day ?? 0) / 365))
 
 const selectedSlot   = ref(null)
 const selectedType   = ref('BASIC')
@@ -381,12 +395,15 @@ function serverAgeDot(server) {
   return '●'
 }
 
+function isOutdated(server) {
+  return currentYear.value > (server.generation ?? 0)
+}
+
 function serverGenBadgeColor(server) {
-  const currentYear = Math.floor((props.gameState.day ?? 0) / 365)
-  const gap = currentYear - (server.generation ?? 0)
-  if (gap >= 2) return '#f85149'   // 2+ generations old → red
-  if (gap >= 1) return '#d29922'   // 1 generation old → orange
-  return '#3fb950'                  // current gen → green
+  const gap = currentYear.value - (server.generation ?? 0)
+  if (gap >= 2) return '#f85149'   // 2+ générations de retard → rouge
+  if (gap >= 1) return '#d29922'   // 1 génération de retard → orange
+  return '#3fb950'                  // génération actuelle → vert
 }
 
 function estimateSellPrice(server) {
@@ -399,6 +416,10 @@ function estimateSellPrice(server) {
 
 function onSellServer(slot) {
   sellServer(props.gameState, props.cell.floorId, props.cell.x, props.cell.y, slot)
+}
+
+function onRenew(slot) {
+  emit('renew-server', { floorId: props.cell.floorId, x: props.cell.x, y: props.cell.y, slot })
 }
 
 function onRepair(slot) {
@@ -602,6 +623,28 @@ function onInstall() {
 }
 .moveall-btn:hover:not(:disabled) { background: #1a4d1a; }
 .moveall-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.renew-btn {
+  flex: 1;
+  background: #1a1a2e;
+  border: 1px solid #58a6ff;
+  color: #58a6ff;
+  font-family: monospace;
+  font-size: 9px;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.renew-btn:hover:not(:disabled) { background: #1f3a5f; }
+.renew-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.renew-cost {
+  color: #d29922;
+  font-weight: bold;
+}
 
 .server-badges {
   display: flex;

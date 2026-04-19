@@ -181,6 +181,14 @@ const SKILLS = {
     category: 'business', spReq: 22, cost: 10000,
     requires: ['PREMIUM_SLA', 'SERVICE_EXPAND'], icon: '🏢',
   },
+
+  // Migration à chaud
+  LIVE_MIGRATION: {
+    id: 'LIVE_MIGRATION', label: 'Migration à Chaud',
+    desc: 'Lors du renouvellement d\'un serveur, les clients migrent automatiquement sans interruption de service. Sans ce skill, ils retournent en file d\'attente.',
+    category: 'infra', spReq: 18, cost: 10000,
+    requires: ['REDUNDANCY'], icon: '🔄',
+  },
 }
 
 export { SKILLS }
