@@ -19,6 +19,7 @@ function applySkill(state, skillId) {
     return { success: false, message: `Fonds insuffisants ($${skill.cost} requis)` }
 
   state.money -= skill.cost
+  state.skillPoints = (state.skillPoints ?? 0) - skill.spReq
   if (!state.unlockedSkills) state.unlockedSkills = []
   state.unlockedSkills.push(skillId)
 

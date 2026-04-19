@@ -216,11 +216,19 @@ export function startBackgroundDrone() {
   droneGain2.gain.setValueAtTime(0.1, audioCtx.currentTime)
   
   // 3) Air Conditioning / Server Fan noise (Filtered White Noise)
-  const bufferSize = audioCtx.sampleRate * 2 // 2 seconds of noise
+  // Use a longer buffer (8s) so any loop edge is inaudible under the lowpass filter
+  const bufferSize = audioCtx.sampleRate * 8
   const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate)
   const output = noiseBuffer.getChannelData(0)
   for (let i = 0; i < bufferSize; i++) {
     output[i] = Math.random() * 2 - 1 // White noise
+  }
+  // Crossfade edges to zero (50 ms) so the loop boundary never clicks
+  const fadeSamples = Math.floor(audioCtx.sampleRate * 0.05)
+  for (let i = 0; i < fadeSamples; i++) {
+    const t = i / fadeSamples
+    output[i] *= t
+    output[bufferSize - 1 - i] *= t
   }
   
   const fanNoise = audioCtx.createBufferSource()

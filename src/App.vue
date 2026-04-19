@@ -91,6 +91,8 @@
             <ShopPanel
               :gameState="gameState"
               :mode="mode"
+              :isMultiplayer="appMode === 'mp'"
+              :sendAction="appMode === 'mp' ? mp.sendAction : null"
               @start-place-rack="startPlaceRack"
               @buy-floor="onBuyFloor"
             />

@@ -20,27 +20,27 @@ function isAdjacentToUnlocked(grid, x, y) {
 
 function unlockCell(state, floorId, x, y) {
   const floor = getFloor(state, floorId)
-  if (!floor) return false
+  if (!floor) return { success: false, message: 'Étage introuvable' }
   const cell = floor.grid[y]?.[x]
-  if (!cell || !cell.locked) return false
-  if (!isAdjacentToUnlocked(floor.grid, x, y)) return false
+  if (!cell || !cell.locked) return { success: false, message: 'Case invalide ou déjà débloquée' }
+  if (!isAdjacentToUnlocked(floor.grid, x, y)) return { success: false, message: 'Case non adjacente' }
 
   const cost = getUnlockCost(floor)
-  if (state.money < cost) return false
+  if (state.money < cost) return { success: false, message: `Fonds insuffisants ($${cost} requis)` }
 
   state.money -= cost
   cell.locked  = false
-  return true
+  return { success: true }
 }
 
 function buyFloor(state) {
   const cost = FLOOR_COST_BASE * state.floors.length
-  if (state.money < cost) return false
+  if (state.money < cost) return { success: false, message: `Fonds insuffisants ($${cost} requis)` }
 
   state.money -= cost
   const newFloor = createFloor(state.floors.length, 2, 2)
   state.floors.push(newFloor)
-  return true
+  return { success: true }
 }
 
 export { getUnlockCost, isAdjacentToUnlocked, unlockCell, buyFloor }

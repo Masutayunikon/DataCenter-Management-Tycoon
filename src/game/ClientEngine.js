@@ -404,14 +404,38 @@ function processDepartures(state) {
     if (emergencyLeave || (!isIncubator && churnLeave) || expired || serverMissing) {
       if (emergencyLeave && !hasRecentTicket(state, 'incident', null, client.id, 2)) {
         state.reputation = clamp(0, 100, state.reputation - 2)
-        addTicketRaw(state, 'incident',
-          `🚨 ${client.name} a abandonné le service (satisfaction critique: ${Math.round(client.satisfaction)}%)`,
-          'critical', null, client.id)
+        // Monetary penalty: 3 days of this client's daily revenue
+        const dailyRev = client.isEnterprise
+          ? (client.dailyRate ?? 0)
+          : Math.round((state.servicePrices?.[client.serviceId] ?? 0))
+        const penalty = Math.round(dailyRev * 3)
+        if (penalty > 0) {
+          state.money -= penalty
+          addTicketRaw(state, 'incident',
+            `🚨 ${client.name} a abandonné le service (satisfaction critique: ${Math.round(client.satisfaction)}%) — pénalité -$${penalty}`,
+            'critical', null, client.id)
+        } else {
+          addTicketRaw(state, 'incident',
+            `🚨 ${client.name} a abandonné le service (satisfaction critique: ${Math.round(client.satisfaction)}%)`,
+            'critical', null, client.id)
+        }
       } else if (churnLeave && !hasRecentTicket(state, 'incident', null, client.id, 2)) {
         state.reputation = clamp(0, 100, state.reputation - 3)
-        addTicketRaw(state, 'incident',
-          `😠 ${client.name} a résilié — insatisfait depuis ${client.daysUnhappy} jours`,
-          'critical', null, client.id)
+        // Monetary penalty: 2 days of revenue
+        const dailyRev = client.isEnterprise
+          ? (client.dailyRate ?? 0)
+          : Math.round((state.servicePrices?.[client.serviceId] ?? 0))
+        const penalty = Math.round(dailyRev * 2)
+        if (penalty > 0) {
+          state.money -= penalty
+          addTicketRaw(state, 'incident',
+            `😠 ${client.name} a résilié — insatisfait depuis ${client.daysUnhappy} jours — pénalité -$${penalty}`,
+            'critical', null, client.id)
+        } else {
+          addTicketRaw(state, 'incident',
+            `😠 ${client.name} a résilié — insatisfait depuis ${client.daysUnhappy} jours`,
+            'critical', null, client.id)
+        }
       } else if (serverMissing && !emergencyLeave && !churnLeave) {
         state.reputation = clamp(0, 100, state.reputation - 1)
         addTicketRaw(state, 'incident',

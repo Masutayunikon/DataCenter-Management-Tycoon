@@ -72,13 +72,20 @@ export async function processAction(room, socketId, type, payload) {
       case 'buy_rack': {
         const { unlockCell } = await import('../../src/game/GridEngine.js')
         const result = unlockCell(state, payload.floorId, payload.x, payload.y)
-        if (!result.success) return { ok: false, error: result.message }
+        if (!result.success) return { ok: false, error: result.message ?? 'Impossible de déverrouiller' }
         break
       }
 
       case 'buy_floor': {
         const { buyFloor } = await import('../../src/game/GridEngine.js')
-        const result = buyFloor(state, payload.floorId)
+        const result = buyFloor(state)
+        if (!result.success) return { ok: false, error: result.message }
+        break
+      }
+
+      case 'upgrade_switch': {
+        const { upgradeSwitch } = await import('../../src/game/NetworkEngine.js')
+        const result = upgradeSwitch(state, payload.floorId)
         if (!result.success) return { ok: false, error: result.message }
         break
       }

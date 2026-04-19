@@ -175,7 +175,7 @@
           class="loan-btn take-btn"
           :disabled="gameState.loans?.some(l => !l.paid)"
           @click="onTakeLoan(idx)"
-        >Emprunter</button>
+        >Emprunter ~${{ projectedRepayment(tier).toLocaleString() }}</button>
         <button
           v-else
           class="loan-btn repay-btn"
@@ -226,11 +226,13 @@ import { EMPLOYEE_SUPPORT_DAILY, EMPLOYEE_SECURITY_DAILY } from '../game/Economy
 const EMPLOYEE_HIRE_COST = 3000
 
 const props = defineProps({
-  gameState: { type: Object, required: true },
-  mode:      { type: String, default: 'default' },
+  gameState:      { type: Object,   required: true },
+  mode:           { type: String,   default: 'default' },
+  isMultiplayer:  { type: Boolean,  default: false },
+  sendAction:     { type: Function, default: null },
 })
 
-const emit = defineEmits(['start-place-rack', 'buy-floor'])
+const emit = defineEmits(['start-place-rack', 'buy-floor', 'upgrade-switch'])
 
 const currentFloor = computed(() =>
   props.gameState.floors[props.gameState.currentFloor]
@@ -278,8 +280,26 @@ function fireEmployee(type) {
   props.gameState.employees[type]--
 }
 
-function onUpgradeSwitch(floorId) {
-  upgradeSwitch(props.gameState, floorId)
+async function onUpgradeSwitch(floorId) {
+  if (props.isMultiplayer && props.sendAction) {
+    await props.sendAction('upgrade_switch', { floorId })
+  } else {
+    upgradeSwitch(props.gameState, floorId)
+  }
+}
+
+// Estimate total repayment using minimum repayment schedule simulation
+function projectedRepayment(tier) {
+  let remaining = tier.amount
+  let totalPaid = 0
+  const maxDays = 2000 // safety cap
+  for (let d = 0; d < maxDays && remaining > 0; d++) {
+    remaining += Math.ceil(remaining * tier.rate)
+    const payment = Math.min(Math.max(1, Math.ceil(tier.amount * 0.01)), remaining)
+    totalPaid += payment
+    remaining -= payment
+  }
+  return Math.round(totalPaid / 100) * 100 // round to nearest $100
 }
 
 function hasActiveLoan(tierIdx) {

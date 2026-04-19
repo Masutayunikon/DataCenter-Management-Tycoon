@@ -67,6 +67,10 @@
               <span class="row-label">Trésorerie</span>
               <span class="row-value" :class="gameState.money < 500 ? 'red' : 'green'">${{ gameState.money.toLocaleString() }}</span>
             </div>
+            <div class="row" v-if="getTotalDebt(gameState) > 0">
+              <span class="row-label">💳 Dette en cours</span>
+              <span class="row-value red">-${{ getTotalDebt(gameState).toLocaleString() }}</span>
+            </div>
           </div>
 
           <!-- Infrastructure -->
@@ -328,7 +332,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { getHackProtection } from '../game/SimulationEngine.js'
+import { getHackProtection, getTotalDebt } from '../game/SimulationEngine.js'
 import { MILESTONES, COLUMNS } from '../game/GameState.js'
 import { playSFX } from '../game/AudioEngine.js'
 
