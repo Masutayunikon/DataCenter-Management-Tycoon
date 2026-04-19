@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.1.0] - 2026-04-19
+
+### Features
+
+* server renewal system + Gen year display + LIVE_MIGRATION skill
+
+### Bug Fixes
+
+* sync server with game logic changes (0ec2d662bf658cb6edefdf90daa10cc03e75ee5f)
+* sync server with game logic changes (17809f5dad0b917505f4ee7793b1a59be6e607b7)
+* 6 bugs — SP deduction, audio pop, floor/rack buy, switch MP sync, departure penalty, loan display
+
 ## [4.0.1] - 2026-04-17
 
 ### Bug Fixes
